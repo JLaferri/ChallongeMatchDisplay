@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="Fizzi.Applications.ChallongeVisualization.View.TournamentSelectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Margin="12,6" FontSize="18" TextWrapping="Wrap">
+            Select tournament to monitor. If tournament does not show up, click begin tournament on challonge and refresh.
+        </TextBlock>
+        
+        <ListView Grid.Row="1" Margin="12" ItemsSource="{Binding TournamentCollection}" 
+                                                  SelectedItem="{Binding SelectedTournament, UpdateSourceTrigger=PropertyChanged}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" Margin="6" FontSize="18" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <DockPanel Grid.Row="2">
+            <Button DockPanel.Dock="Right" Grid.Row="2" Margin="12" Width="140" HorizontalAlignment="Right" FontSize="18" Content="Next"
+                    Command="{Binding NextCommand}">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedTournament}" Value="{x:Null}">
+                                <Setter Property="IsEnabled" Value="False" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <Button DockPanel.Dock="Left" Grid.Row="2" Margin="12" Width="140" HorizontalAlignment="Left" FontSize="18" Content="Back"
+                    Command="{Binding Back}" />
+        </DockPanel>
+        
+    </Grid>
+</UserControl>

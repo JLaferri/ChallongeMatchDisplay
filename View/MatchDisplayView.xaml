@@ -1,0 +1,182 @@
+﻿<UserControl x:Class="Fizzi.Applications.ChallongeVisualization.View.MatchDisplayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <CollectionViewSource x:Key="Matches" Source="{Binding Context.Tournament.Matches}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Value.RoundOrder" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Value.IsWinners" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Margin="12">
+            <Grid Grid.IsSharedSizeScope="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Header Rows -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Margin="3" Background="CornflowerBlue">
+                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Context.Tournament.Name}" />
+                        </Border>
+                        
+                        <Button Grid.Column="1" Margin="3" Cursor="Hand" Command="{Binding Back}">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Border Background="CornflowerBlue">
+                                        <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Back" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                    
+                    
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Round" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Margin="3" Background="DimGray">
+                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Round" />
+                        </Border>
+
+                        <Border Grid.Column="1" Margin="3" Background="DimGray">
+                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 1" />
+                        </Border>
+
+                        <Border Grid.Column="2" Margin="3" Background="DimGray">
+                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 2" />
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+                    <ItemsControl ItemsSource="{Binding Source={StaticResource Matches}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid DataContext="{Binding Value}">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding State}" Value="complete">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Player1Id}" Value="{x:Null}" />
+                                                        <Condition Binding="{Binding Player2Id}" Value="{x:Null}" />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="Round" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="Timer" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Margin="3" Background="SlateBlue">
+                                        <TextBlock Margin="6" FontSize="18" Foreground="White" HorizontalAlignment="Center" Text="{Binding RoundName}" />
+                                    </Border>
+
+                                    <Border Grid.Column="1" Margin="3" MouseLeftButtonUp="PlayerBorder_MouseLeftButtonUp">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Cursor" Value="Hand" />
+                                                <Setter Property="Background" Value="SlateBlue" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
+                                                        <Setter Property="Cursor" Value="Arrow" />
+                                                        <Setter Property="Background" Value="Gray" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                        <Setter Property="Cursor" Value="Arrow" />
+                                                        <Setter Property="Background" Value="Gray" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" Foreground="White" HorizontalAlignment="Center" 
+                                                   Text="{Binding Player1.Name}" />
+                                    </Border>
+
+                                    <Border Grid.Column="2" Margin="3" MouseLeftButtonUp="PlayerBorder_MouseLeftButtonUp">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Cursor" Value="Hand" />
+                                                <Setter Property="Background" Value="SlateBlue" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
+                                                        <Setter Property="Cursor" Value="Arrow" />
+                                                        <Setter Property="Background" Value="Gray" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                        <Setter Property="Cursor" Value="Arrow" />
+                                                        <Setter Property="Background" Value="Gray" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" Foreground="White" HorizontalAlignment="Center" 
+                                                   Text="{Binding Player2.Name}" />
+                                    </Border>
+                                    
+                                    <!--<Border Grid.Column="3" Margin="3" Background="Gray">
+                                        <Border.Style>
+                                            <Style 
+                                        </Border.Style>
+                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" Foreground="White" HorizontalAlignment="Center"
+                                                   Text="0:00" />
+                                    </Border>-->
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <TextBlock Grid.Row="1" Margin="12,0,12,12" TextWrapping="Wrap" FontSize="18" Foreground="Red" Text="{Binding Context.ErrorMessage}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Context.IsError}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Grid>
+</UserControl>

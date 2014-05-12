@@ -1,0 +1,45 @@
+﻿<Window x:Class="Fizzi.Applications.ChallongeVisualization.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
+        xmlns:lvm="clr-namespace:Fizzi.Applications.ChallongeVisualization.ViewModel"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        Height="350" Width="525">
+    <Window.DataContext>
+        <lvm:MainViewModel />
+    </Window.DataContext>
+    <Window.Title>
+        <Binding Path="Version" StringFormat="Challonge Front-End Beta ({0})" Mode="OneTime" />
+    </Window.Title>
+    <Grid Name="MainGrid">
+        <ContentControl>
+            <ContentControl.Style>
+                <Style TargetType="ContentControl">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding CurrentScreen}" Value="{x:Static lvm:ScreenType.ApiKey}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <lview:ApiKeyView />
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding CurrentScreen}" Value="{x:Static lvm:ScreenType.TournamentSelection}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <lview:TournamentSelectionView />
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding CurrentScreen}" Value="{x:Static lvm:ScreenType.PendingMatchView}">
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <lview:MatchDisplayView />
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ContentControl.Style>
+        </ContentControl>
+    </Grid>
+</Window>
