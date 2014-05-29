@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
+             mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300"
+             IsHitTestVisible="True">
     <UserControl.Resources>
         <CollectionViewSource x:Key="Matches" Source="{Binding Context.Tournament.Matches}">
             <CollectionViewSource.SortDescriptions>
@@ -13,6 +14,8 @@
                 <scm:SortDescription PropertyName="Value.IsWinners" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        
+        <lview:ProgressToSizeConverter x:Key="ProgressToSizeConv" />
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -25,6 +28,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <!-- Header Rows -->
@@ -41,14 +45,14 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Margin="3" Background="CornflowerBlue">
-                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Context.Tournament.Name}" />
+                            <TextBlock Margin="6" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Context.Tournament.Name}" />
                         </Border>
                         
                         <Button Grid.Column="1" Margin="3" Cursor="Hand" Command="{Binding Back}">
                             <Button.Template>
                                 <ControlTemplate>
                                     <Border Background="CornflowerBlue">
-                                        <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Back" />
+                                        <TextBlock Margin="6" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Back" />
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
@@ -59,20 +63,25 @@
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Round" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Code" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Round" />
+                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Round" />
                         </Border>
 
                         <Border Grid.Column="1" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 1" />
+                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Code" />
                         </Border>
 
                         <Border Grid.Column="2" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 2" />
+                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 1" />
+                        </Border>
+
+                        <Border Grid.Column="3" Margin="3" Background="DimGray">
+                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 2" />
                         </Border>
                     </Grid>
                 </Grid>
@@ -101,34 +110,18 @@
 
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" SharedSizeGroup="Round" />
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="Code" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" SharedSizeGroup="Timer" />
                                     </Grid.ColumnDefinitions>
 
                                     <Border Grid.Column="0" Margin="3" Background="SlateBlue">
-                                        <TextBlock Margin="6" FontSize="18" Foreground="White" HorizontalAlignment="Center" Text="{Binding RoundName}" />
+                                        <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding RoundName}" />
                                     </Border>
 
-                                    <Border Grid.Column="1" Margin="3" MouseLeftButtonUp="PlayerBorder_MouseLeftButtonUp">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Cursor" Value="Hand" />
-                                                <Setter Property="Background" Value="SlateBlue" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
-                                                        <Setter Property="Cursor" Value="Arrow" />
-                                                        <Setter Property="Background" Value="Gray" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
-                                                        <Setter Property="Cursor" Value="Arrow" />
-                                                        <Setter Property="Background" Value="Gray" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" Foreground="White" HorizontalAlignment="Center" 
-                                                   Text="{Binding Player1.Name}" />
+                                    <Border Grid.Column="1" Margin="3" Background="SlateBlue">
+                                        <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Identifier}" />
                                     </Border>
 
                                     <Border Grid.Column="2" Margin="3" MouseLeftButtonUp="PlayerBorder_MouseLeftButtonUp">
@@ -148,11 +141,68 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" Foreground="White" HorizontalAlignment="Center" 
-                                                   Text="{Binding Player2.Name}" />
+                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
+                                                            <Setter Property="Foreground" Value="LightGray" />
+                                                            <!--<Setter Property="FontWeight" Value="Normal" />-->
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                            <TextBlock.Text>
+                                                <PriorityBinding>
+                                                    <Binding Path="Player1.Name" />
+                                                    <Binding Path="Player1SourceString" />
+                                                </PriorityBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Border>
+
+                                    <Border Grid.Column="3" Margin="3" MouseLeftButtonUp="PlayerBorder_MouseLeftButtonUp">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Cursor" Value="Hand" />
+                                                <Setter Property="Background" Value="SlateBlue" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
+                                                        <Setter Property="Cursor" Value="Arrow" />
+                                                        <Setter Property="Background" Value="Gray" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                        <Setter Property="Cursor" Value="Arrow" />
+                                                        <Setter Property="Background" Value="Gray" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" HorizontalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                            <Setter Property="Foreground" Value="LightGray" />
+                                                            <!--<Setter Property="FontWeight" Value="Normal" />-->
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                            <TextBlock.Text>
+                                                <PriorityBinding>
+                                                    <Binding Path="Player2.Name" />
+                                                    <Binding Path="Player2SourceString" />
+                                                </PriorityBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
                                     </Border>
                                     
-                                    <!--<Border Grid.Column="3" Margin="3" Background="Gray">
+                                    <!--<Border Grid.Column="4" Margin="3" Background="Gray">
                                         <Border.Style>
                                             <Style 
                                         </Border.Style>
@@ -164,6 +214,39 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+
+                <ProgressBar Grid.Row="2" Minimum="0" Maximum="100" Value="{Binding Context.Tournament.ProgressMeter, Mode=OneWay}">
+                    <ProgressBar.Template>
+                        <ControlTemplate>
+                            <Border Margin="3">
+                                <Border.Background>
+                                    <DrawingBrush TileMode="None" Stretch="Fill">
+                                        <DrawingBrush.Drawing>
+                                            <DrawingGroup>
+                                                <GeometryDrawing Brush="Gray">
+                                                    <GeometryDrawing.Geometry>
+                                                        <RectangleGeometry Rect="0,0,1,1" />
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+                                                <GeometryDrawing Brush="#50C050">
+                                                    <GeometryDrawing.Geometry>
+                                                        <MultiBinding Converter="{StaticResource ProgressToSizeConv}">
+                                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Value" />
+                                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Minimum" />
+                                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Maximum" />
+                                                        </MultiBinding>
+                                                    </GeometryDrawing.Geometry>
+                                                </GeometryDrawing>
+                                            </DrawingGroup>
+                                        </DrawingBrush.Drawing>
+                                    </DrawingBrush>
+                                </Border.Background>
+                                <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" 
+                                           Text="{Binding Context.Tournament.ProgressMeter, Mode=OneWay, StringFormat={}{0}% Complete}" />
+                            </Border>
+                        </ControlTemplate>
+                    </ProgressBar.Template>
+                </ProgressBar>
             </Grid>
         </Border>
 

@@ -22,6 +22,9 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         private string _apiKey;
         public string ApiKey { get { return _apiKey; } set { this.RaiseAndSetIfChanged("ApiKey", ref _apiKey, value, PropertyChanged); } }
 
+        private string _subdomain;
+        public string Subdomain { get { return _subdomain; } set { this.RaiseAndSetIfChanged("Subdomain", ref _subdomain, value, PropertyChanged); } }
+
         public ChallongePortal Portal { get; private set; }
 
         public Tournament[] TournamentCollection { get; private set; }
@@ -49,7 +52,8 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                 switch (CurrentScreen)
                 {
                     case ScreenType.ApiKey:
-                        Portal = new ChallongePortal(ApiKey);
+                        var subdomain = string.IsNullOrWhiteSpace(Subdomain) ? null : Subdomain;
+                        Portal = new ChallongePortal(ApiKey, subdomain);
 
                         try
                         {

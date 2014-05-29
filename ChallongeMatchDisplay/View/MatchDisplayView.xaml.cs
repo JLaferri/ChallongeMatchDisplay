@@ -35,5 +35,20 @@ namespace Fizzi.Applications.ChallongeVisualization.View
             if (solidBrush.Color == Colors.Red) border.Background = new SolidColorBrush(Colors.SlateBlue);
             else if (solidBrush.Color == Colors.SlateBlue) border.Background = new SolidColorBrush(Colors.Red);
         }
+
+        private void Grid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            //Check if control key is pressed
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                var control = (Grid)sender;
+                var transform = control.RenderTransform as ScaleTransform;
+
+                var newScale = transform.ScaleX + (0.1 * (e.Delta / 120));
+                control.RenderTransform = new ScaleTransform(newScale, newScale);
+
+                e.Handled = true;
+            }
+        }
     }
 }

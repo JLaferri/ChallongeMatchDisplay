@@ -27,6 +27,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         public int Round { get { return source.Round; } }
         public string State { get { return source.State; } }
+        public string Identifier { get { return source.Identifier; } }
 
         public DateTime? StartedAt { get { return source.StartedAt; } }
         #endregion
@@ -40,51 +41,79 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         public ObservableMatch Player1PreviousMatch { get { return Player1PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player1PrereqMatchId.Value] : null; } }
         public ObservableMatch Player2PreviousMatch { get { return Player2PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player2PrereqMatchId.Value] : null; } }
 
-        public string RoundName { get { return getRoundName(); } }
+        public string RoundName 
+        { 
+            get 
+            { 
+                switch (OwningContext.Tournament.TournamentType)
+                {
+                    case "double elimination":
+                        string roundText;
 
-        private string getRoundName()
-        {
-            switch (OwningContext.Tournament.TournamentType)
-            {
-                case "double elimination":
-                    string roundText;
+                        if (Round < 0)
+                        {
+                            if (Round == OwningContext.Tournament.MinRoundNumber) roundText = "LF";
+                            else if (Round == OwningContext.Tournament.MinRoundNumber + 1) roundText = "LSF";
+                            else if (Round == OwningContext.Tournament.MinRoundNumber + 2) roundText = "LQF";
+                            else roundText = "L" + Math.Abs(Round);
+                        }
+                        else
+                        {
+                            if (Round == OwningContext.Tournament.MaxRoundNumber) roundText = "GF";
+                            else if (Round == OwningContext.Tournament.MaxRoundNumber - 1) roundText = "WF";
+                            else if (Round == OwningContext.Tournament.MaxRoundNumber - 2) roundText = "WSF";
+                            else if (Round == OwningContext.Tournament.MaxRoundNumber - 3) roundText = "WQF";
+                            else roundText = "W" + Round;
+                        }
 
-                    if (Round < 0)
-                    {
-                        if (Round == OwningContext.Tournament.MinRoundNumber) roundText = "LF";
-                        else if (Round == OwningContext.Tournament.MinRoundNumber + 1) roundText = "LSF";
-                        else if (Round == OwningContext.Tournament.MinRoundNumber + 2) roundText = "LQF";
-                        else roundText = "L" + Math.Abs(Round);
-                    }
-                    else
-                    {
-                        if (Round == OwningContext.Tournament.MaxRoundNumber) roundText = "GF";
-                        else if (Round == OwningContext.Tournament.MaxRoundNumber - 1) roundText = "WF";
-                        else if (Round == OwningContext.Tournament.MaxRoundNumber - 2) roundText = "WSF";
-                        else if (Round == OwningContext.Tournament.MaxRoundNumber - 3) roundText = "WQF";
-                        else roundText = "W" + Round;
-                    }
-
-                    return roundText;
-                default:
-                    return Round.ToString();
-            }
+                        return roundText;
+                    default:
+                        return Round.ToString();
+                }
+            } 
         }
 
-        public int RoundOrder { get { return getRoundOrder(); } }
-
-        private int getRoundOrder()
-        {
-            switch (OwningContext.Tournament.TournamentType)
-            {
-                case "double elimination":
-                    return Round < 0 ? Math.Abs(Round) : Round - 1;
-                default:
-                    return Round;
-            }
+        public int RoundOrder 
+        { 
+            get 
+            { 
+                switch (OwningContext.Tournament.TournamentType)
+                {
+                    case "double elimination":
+                        return Round < 0 ? Math.Abs(Round) : Round - 1;
+                    default:
+                        return Round;
+                }
+            } 
         }
 
         public bool IsWinners { get { return Round < 0; } }
+
+        public string Player1SourceString
+        {
+            get
+            {
+                if (Player1PreviousMatch == null) return "N/A";
+
+                string previousMatchCode = Player1PreviousMatch.Identifier;
+
+                if (Player1IsPrereqMatchLoser) return "Loser of " + previousMatchCode;
+                else return "Winner of " + previousMatchCode;
+            }
+        }
+
+        public string Player2SourceString
+        {
+            get
+            {
+                if (Player2PreviousMatch == null) return "N/A";
+
+                string previousMatchCode = Player2PreviousMatch.Identifier;
+
+                if (Player2IsPrereqMatchLoser) return "Loser of " + previousMatchCode;
+                else return "Winner of " + previousMatchCode;
+            }
+        }
         #endregion
 
         public ObservableMatch(Match match, TournamentContext context)

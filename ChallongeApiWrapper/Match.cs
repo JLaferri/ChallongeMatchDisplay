@@ -19,6 +19,7 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
 
         public int Round { get; set; }
         public string State { get; set; }
+        public string Identifier { get; set; }
 
         public DateTime? StartedAt { get; set; }
     }

@@ -12,11 +12,31 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+    
+        <Grid Grid.Row="1" VerticalAlignment="Center" Margin="12,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Grid.Column="0" Grid.Row="0" Text="API Key" Margin="6" FontSize="18" />
+            <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}" Margin="6" FontSize="18">
+                <TextBox.ToolTip>
+                    The API key of a challonge account. Your API key can be found on the challonge site.
+                </TextBox.ToolTip>
+            </TextBox>
 
-        <DockPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="12,0">
-            <TextBlock Text="API Key" Margin="6" FontSize="18" />
-            <TextBox Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}" Margin="6" FontSize="18" />
-        </DockPanel>
+            <TextBlock Grid.Column="0" Grid.Row="1" Text="Subdomain" Margin="6" FontSize="18" />
+            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Subdomain, UpdateSourceTrigger=PropertyChanged}" Margin="6" FontSize="18">
+                <TextBox.ToolTip>
+                    Subdomain in which to search for tournaments. Leave blank for no subdomain.
+                </TextBox.ToolTip>
+            </TextBox>
+        </Grid>
 
         <TextBlock Grid.Row="2" Margin="12,6" FontSize="18" TextWrapping="Wrap" Foreground="Red" Text="{Binding ErrorMessage}" />
 

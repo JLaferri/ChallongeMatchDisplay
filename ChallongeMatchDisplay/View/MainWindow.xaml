@@ -4,7 +4,7 @@
         xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
         xmlns:lvm="clr-namespace:Fizzi.Applications.ChallongeVisualization.ViewModel"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        Height="350" Width="525">
+        Height="600" Width="700">
     <Window.DataContext>
         <lvm:MainViewModel />
     </Window.DataContext>

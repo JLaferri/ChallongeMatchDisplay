@@ -12,11 +12,15 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
         private readonly RestClient client;
 
         public string ApiKey { get; private set; }
+        public string Subdomain { get; private set; }
 
-        public ChallongePortal(string apiKey)
+        public ChallongePortal(string apiKey) : this(apiKey, null) { }
+
+        public ChallongePortal(string apiKey, string subdomain)
         {
             client = new RestClient(@"https://api.challonge.com/v1/");
             ApiKey = apiKey;
+            Subdomain = subdomain;
         }
 
         private void throwOnError(IRestResponse response)
@@ -31,6 +35,7 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
         {
             var request = new RestRequest("tournaments.xml", Method.GET);
             request.AddParameter("api_key", ApiKey);
+            if (!string.IsNullOrWhiteSpace(Subdomain)) request.AddParameter("subdomain", Subdomain);
 
             var response = client.Execute<List<Tournament>>(request);
             throwOnError(response);

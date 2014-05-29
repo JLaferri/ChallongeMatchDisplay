@@ -106,6 +106,7 @@
     <Compile Include="View\MatchDisplayView.xaml.cs">
       <DependentUpon>MatchDisplayView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ProgressToSizeConverter.cs" />
     <Compile Include="View\TournamentSelectionView.xaml.cs">
       <DependentUpon>TournamentSelectionView.xaml</DependentUpon>
     </Compile>
