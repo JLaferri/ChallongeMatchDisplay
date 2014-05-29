@@ -102,11 +102,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ViewModel\MatchDisplay.cs" />
     <Compile Include="View\MatchDisplayView.xaml.cs">
       <DependentUpon>MatchDisplayView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ProgressToSizeConverter.cs" />
+    <Compile Include="View\TimeSpanToBrushConverter.cs" />
+    <Compile Include="View\TimeSpanToShortStringConverter.cs" />
     <Compile Include="View\TournamentSelectionView.xaml.cs">
       <DependentUpon>TournamentSelectionView.xaml</DependentUpon>
     </Compile>

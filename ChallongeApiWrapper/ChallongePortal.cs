@@ -61,7 +61,7 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
 
             var response = client.Execute<List<Match>>(request);
             throwOnError(response);
-
+            
             return response.Data;
         }
 

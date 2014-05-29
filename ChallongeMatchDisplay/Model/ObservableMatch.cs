@@ -114,6 +114,8 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 else return "Winner of " + previousMatchCode;
             }
         }
+
+        public TimeSpan? TimeSinceAvailable { get { return StartedAt.HasValue ? DateTime.Now - StartedAt.Value : default(TimeSpan?); } }
         #endregion
 
         public ObservableMatch(Match match, TournamentContext context)
@@ -151,6 +153,12 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             foreach (var property in matchProperties)
             {
                 if (property.GetValue(oldData, null) != property.GetValue(newData, null)) this.Raise(property.Name, PropertyChanged);
+            }
+
+            //Always raise the TimeSinceAvailable property if StatedAt is not null
+            if (StartedAt.HasValue)
+            {
+                this.Raise("TimeSinceAvailable", PropertyChanged);
             }
         }
 
