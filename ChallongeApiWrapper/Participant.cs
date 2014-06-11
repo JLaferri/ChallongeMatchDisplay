@@ -11,5 +11,7 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
         public string Name { get; set; }
 
         public int Seed { get; set; }
+
+        public string Misc { get; set; }
     }
 }

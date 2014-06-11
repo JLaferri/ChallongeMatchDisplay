@@ -19,14 +19,36 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         public string Name { get { return source.Name; } }
 
         public int Seed { get { return source.Seed; } }
+        public string Misc { get { return source.Misc; } }
         #endregion
 
         public TournamentContext OwningContext { get; private set; }
+
+        #region Convenience Properties
+        public bool IsMissing
+        {
+            get
+            {
+                return false;
+            }
+        }
+        #endregion
 
         public ObservableParticipant(Participant participant, TournamentContext context)
         {
             source = participant;
             OwningContext = context;
+
+            //Listen for when properties changed to that changed events for the convenience properties can also be fired.
+            this.PropertyChanged += (sender, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case "Misc":
+                        this.Raise("Player1", PropertyChanged);
+                        break;
+                }
+            };
         }
 
         public void Update(Participant newData)
