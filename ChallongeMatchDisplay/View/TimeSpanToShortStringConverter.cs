@@ -15,6 +15,9 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 
             var time = timeSpan.Value;
 
+            //This condition is to avoid showing negative times that might show up due to clock desynchronizations
+            if (time < TimeSpan.Zero) return "0:00"; 
+
             int hours = (int)Math.Floor(time.TotalHours);
             int minutes = time.Minutes;
 

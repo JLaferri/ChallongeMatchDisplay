@@ -75,5 +75,15 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
 
             return response.Data;
         }
+
+        public void SetParticipantMisc(int tournamentId, int participantId, string misc)
+        {
+            var request = new RestRequest(string.Format("tournaments/{0}/participants/{1}.xml", tournamentId, participantId), Method.PUT);
+            request.AddParameter("api_key", ApiKey);
+            request.AddParameter("participant[misc]", misc);
+
+            var response = client.Execute(request);
+            throwOnError(response);
+        }
     }
 }

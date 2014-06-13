@@ -16,7 +16,7 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 
             var time = timeSpan.Value;
 
-            if (time.TotalMinutes > 30) return new SolidColorBrush(Color.FromRgb(0xFF, 0xA0, 0x00));
+            if (time.TotalMinutes > 30) return new SolidColorBrush(Color.FromRgb(0xFF, 0x88, 0x00));
             else return new SolidColorBrush(Color.FromRgb(0x50, 0xC0, 0x50));
         }
 
