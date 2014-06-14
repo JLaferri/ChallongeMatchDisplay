@@ -12,6 +12,7 @@
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="Value.RoundOrder" Direction="Ascending" />
                 <scm:SortDescription PropertyName="Value.IsWinners" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Value.Identifier" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
         
