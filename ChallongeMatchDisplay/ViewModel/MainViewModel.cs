@@ -9,6 +9,9 @@ using Fizzi.Applications.ChallongeVisualization.Common;
 using System.ComponentModel;
 using Fizzi.Applications.ChallongeVisualization.Model;
 using System.Net;
+using System.Reactive.Linq;
+using System.IO;
+using RestSharp;
 
 namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 {
@@ -37,16 +40,42 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         private bool _isError;
         public bool IsError { get { return _isError; } set { this.RaiseAndSetIfChanged("IsError", ref _isError, value, PropertyChanged); } }
 
+        private bool _newVersionAvailable;
+        public bool NewVersionAvailable { get { return _newVersionAvailable; } set { this.RaiseAndSetIfChanged("NewVersionAvailable", ref _newVersionAvailable, value, PropertyChanged); } }
+
         private string _errorMessage;
         public string ErrorMessage { get { return _errorMessage; } set { this.RaiseAndSetIfChanged("ErrorMessage", ref _errorMessage, value, PropertyChanged); } }
 
         public ICommand NextCommand { get; private set; }
         public ICommand Back { get; private set; }
 
+        public string ThreadUrl { get { return "http://smashboards.com/threads/challonge-match-display-application-helping-tournaments-run-faster.358186/"; } }
+        
         public MainViewModel()
         {
             CurrentScreen = ScreenType.ApiKey;
-            
+
+            //Observable.Start(() =>
+            //{
+            //    try
+            //    {
+            //        //I'm considering doing an http request to smashboards to find 
+            //        WebRequest request = WebRequest.Create(ThreadUrl);
+            //        request.Credentials = CredentialCache.DefaultCredentials;
+
+            //        WebResponse response = request.GetResponse();
+            //        if (((HttpWebResponse)response).StatusDescription == "OK")
+            //        {
+            //            Stream dataStream = response.GetResponseStream();
+            //            StreamReader reader = new StreamReader(dataStream);
+            //            string responseFromServer = reader.ReadToEnd();
+            //            reader.Close();
+            //        }
+            //        response.Close();
+            //    }
+            //    catch { /* ignore */ }
+            //});
+
             NextCommand = Command.Create(() => true, () =>
             {
                 switch (CurrentScreen)
