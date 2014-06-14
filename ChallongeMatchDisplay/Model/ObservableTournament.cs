@@ -70,7 +70,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             //Raise notify event for any property that has changed value
             foreach (var property in tournamentProperties)
             {
-                if (property.GetValue(oldData, null) != property.GetValue(newData, null)) this.Raise(property.Name, PropertyChanged);
+                if (!object.Equals(property.GetValue(oldData, null), property.GetValue(newData, null))) this.Raise(property.Name, PropertyChanged);
             }
 
             //Check if there are any new participants, or if participants have been removed. Also check if match count has changed.

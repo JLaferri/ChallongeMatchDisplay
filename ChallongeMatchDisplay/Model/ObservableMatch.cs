@@ -130,15 +130,20 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 {
                     case "Player1Id":
                         this.Raise("Player1", PropertyChanged);
+                        if (Player1 != null) Player1.IsMissing = false; //When a player gets added to a match, clear their missing flag
                         break;
                     case "Player2Id":
                         this.Raise("Player2", PropertyChanged);
+                        if (Player2 != null) Player2.IsMissing = false; //When a player gets added to a match, clear their missing flag
                         break;
                     case "Player1PrereqMatchId":
                         this.Raise("Player1PreviousMatch", PropertyChanged);
                         break;
                     case "Player2PrereqMatchId":
                         this.Raise("Player2PreviousMatch", PropertyChanged);
+                        break;
+                    case "StartedAt":
+                        this.Raise("TimeSinceAvailable", PropertyChanged);
                         break;
                 }
             };
@@ -152,7 +157,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             //Raise notify event for any property that has changed value
             foreach (var property in matchProperties)
             {
-                if (property.GetValue(oldData, null) != property.GetValue(newData, null)) this.Raise(property.Name, PropertyChanged);
+                if (!object.Equals(property.GetValue(oldData, null), property.GetValue(newData, null))) this.Raise(property.Name, PropertyChanged);
             }
 
             //Always raise the TimeSinceAvailable property if StatedAt is not null

@@ -7,7 +7,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 {
     class ParticipantMiscProperties
     {
-        public bool IsMissing { get; set; }
+        public DateTime? UtcTimeMissing { get; set; }
 
         private ParticipantMiscProperties() { }
 
@@ -15,21 +15,16 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         {
             var result = new ParticipantMiscProperties();
 
-            if (string.IsNullOrEmpty(miscString))
-            {
-                result.IsMissing = false;
-            }
-            else
-            {
-                result.IsMissing = bool.Parse(miscString);
-            }
+            DateTime timeMissing;
+            if (DateTime.TryParse(miscString, out timeMissing)) result.UtcTimeMissing = timeMissing;
+            else result.UtcTimeMissing = null;
 
             return result;
         }
 
         public override string ToString()
         {
-            return IsMissing.ToString();
+            return string.Format("{0}", UtcTimeMissing.HasValue ? UtcTimeMissing.ToString() : "NULL");
         }
     }
 }

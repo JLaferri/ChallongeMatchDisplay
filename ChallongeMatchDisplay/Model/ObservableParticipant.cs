@@ -31,9 +31,17 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         public bool IsMissing
         {
-            get { return miscProperties.IsMissing; }
-            set { miscPropertySetter("IsMissing", value, IsMissing, newVal => miscProperties.IsMissing = newVal); }
+            get { return UtcTimeMissing.HasValue; }
+            set { UtcTimeMissing = value ? DateTime.UtcNow : default(DateTime?); }
         }
+
+        public DateTime? UtcTimeMissing
+        {
+            get { return miscProperties.UtcTimeMissing; }
+            set { miscPropertySetter("UtcTimeMissing", value, UtcTimeMissing, newVal => miscProperties.UtcTimeMissing = newVal); }
+        }
+
+        public TimeSpan? TimeSinceMissing { get { return UtcTimeMissing.HasValue ? DateTime.UtcNow - UtcTimeMissing.Value : default(TimeSpan?); } }
 
         private void miscPropertySetter<T>(string property, T newValue, T currentValue, Action<T> setProperty)
         {
@@ -44,9 +52,9 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 this.Raise(property, PropertyChanged);
                 
                 //Commit changes to misc property on challonge
-                Observable.Start(() =>  OwningContext.Portal.SetParticipantMisc(OwningContext.Tournament.Id, this.Id, miscProperties.ToString()));
                 source.Misc = miscProperties.ToString();
-
+                Observable.Start(() => OwningContext.Portal.SetParticipantMisc(OwningContext.Tournament.Id, this.Id, source.Misc));
+                
                 //Store change time to ensure misc changed wont be raised until one full poll frequency
                 lastManualMiscChange = DateTime.UtcNow;
             }
@@ -70,7 +78,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                         miscProperties = ParticipantMiscProperties.Parse(Misc);
 
                         //Check for changes from old to new, raise those properties if changed
-                        if (oldMiscProperties.IsMissing != miscProperties.IsMissing) this.Raise("IsMissing", PropertyChanged);
+                        if (!object.Equals(oldMiscProperties.UtcTimeMissing, miscProperties.UtcTimeMissing)) this.Raise("UtcTimeMissing", PropertyChanged);
+                        break;
+                    case "UtcTimeMissing":
+                        this.Raise("IsMissing", PropertyChanged);
+                        this.Raise("TimeSinceMissing", PropertyChanged);
                         break;
                 }
             };
@@ -89,6 +101,12 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             {
                 if (recentLocalMiscChange && property.Name == "Misc") continue; //When a local change has recently happened to Misc, do not accept change from server
                 if (!object.Equals(property.GetValue(oldData, null), property.GetValue(newData, null))) this.Raise(property.Name, PropertyChanged);
+            }
+
+            //Always raise the TimeSinceMissing property if UtcTimeMissing is not null
+            if (UtcTimeMissing.HasValue)
+            {
+                this.Raise("TimeSinceMissing", PropertyChanged);
             }
         }
 

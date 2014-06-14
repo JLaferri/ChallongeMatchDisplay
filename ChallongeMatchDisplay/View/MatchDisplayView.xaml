@@ -132,6 +132,18 @@
                                     </Border>
 
                                     <CheckBox Grid.Column="2" Margin="3" IsChecked="{Binding Player1.IsMissing}" FocusVisualStyle="{x:Null}">
+                                        <CheckBox.Style>
+                                            <Style TargetType="CheckBox">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </CheckBox.Style>
                                         <CheckBox.Template>
                                             <ControlTemplate TargetType="CheckBox">
                                                 <Border>
@@ -145,43 +157,56 @@
                                                                 <DataTrigger Binding="{Binding Player1.IsMissing}" Value="True">
                                                                     <Setter Property="Background" Value="#E02020" />
                                                                 </DataTrigger>
-                                                                <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
-                                                                    <Setter Property="Cursor" Value="Arrow" />
-                                                                    <Setter Property="Background" Value="Gray" />
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsEnabled}" Value="False">
                                                                     <Setter Property="Cursor" Value="Arrow" />
                                                                     <Setter Property="Background" Value="Gray" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </Border.Style>
-                                                    <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Foreground" Value="White" />
-                                                                <Setter Property="FontWeight" Value="Bold" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
-                                                                        <Setter Property="Foreground" Value="LightGray" />
-                                                                        <!--<Setter Property="FontWeight" Value="Normal" />-->
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                        <TextBlock.Text>
-                                                            <PriorityBinding>
-                                                                <Binding Path="Player1.Name" />
-                                                                <Binding Path="Player1SourceString" />
-                                                            </PriorityBinding>
-                                                        </TextBlock.Text>
-                                                    </TextBlock>
+                                                    <DockPanel>
+                                                        <TextBlock DockPanel.Dock="Right" Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" 
+                                                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                                   Text="{Binding Player1.TimeSinceMissing, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="White" />
+                                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
+                                                                            <Setter Property="Foreground" Value="LightGray" />
+                                                                            <!--<Setter Property="FontWeight" Value="Normal" />-->
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                            <TextBlock.Text>
+                                                                <PriorityBinding>
+                                                                    <Binding Path="Player1.Name" />
+                                                                    <Binding Path="Player1SourceString" />
+                                                                </PriorityBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </DockPanel>
                                                 </Border>
                                             </ControlTemplate>
                                         </CheckBox.Template>
                                     </CheckBox>
 
                                     <CheckBox Grid.Column="3" Margin="3" IsChecked="{Binding Player2.IsMissing}" FocusVisualStyle="{x:Null}">
+                                        <CheckBox.Style>
+                                            <Style TargetType="CheckBox">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </CheckBox.Style>
                                         <CheckBox.Template>
                                             <ControlTemplate TargetType="CheckBox">
                                                 <Border>
@@ -195,37 +220,38 @@
                                                                 <DataTrigger Binding="{Binding Player2.IsMissing}" Value="True">
                                                                     <Setter Property="Background" Value="#E02020" />
                                                                 </DataTrigger>
-                                                                <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
-                                                                    <Setter Property="Cursor" Value="Arrow" />
-                                                                    <Setter Property="Background" Value="Gray" />
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=IsEnabled}" Value="False">
                                                                     <Setter Property="Cursor" Value="Arrow" />
                                                                     <Setter Property="Background" Value="Gray" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </Border.Style>
-                                                    <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Foreground" Value="White" />
-                                                                <Setter Property="FontWeight" Value="Bold" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
-                                                                        <Setter Property="Foreground" Value="LightGray" />
-                                                                        <!--<Setter Property="FontWeight" Value="Normal" />-->
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                        <TextBlock.Text>
-                                                            <PriorityBinding>
-                                                                <Binding Path="Player2.Name" />
-                                                                <Binding Path="Player2SourceString" />
-                                                            </PriorityBinding>
-                                                        </TextBlock.Text>
-                                                    </TextBlock>
+                                                    <DockPanel>
+                                                        <TextBlock DockPanel.Dock="Left" Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" 
+                                                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                                   Text="{Binding Player2.TimeSinceMissing, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                                                        <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="White" />
+                                                                    <Setter Property="FontWeight" Value="Bold" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
+                                                                            <Setter Property="Foreground" Value="LightGray" />
+                                                                            <!--<Setter Property="FontWeight" Value="Normal" />-->
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                            <TextBlock.Text>
+                                                                <PriorityBinding>
+                                                                    <Binding Path="Player2.Name" />
+                                                                    <Binding Path="Player2SourceString" />
+                                                                </PriorityBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </DockPanel>
                                                 </Border>
                                             </ControlTemplate>
                                         </CheckBox.Template>
