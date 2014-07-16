@@ -1,0 +1,121 @@
+﻿<Window x:Class="Fizzi.Applications.ChallongeVisualization.View.OrganizerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
+        Title="Tournament Organizer Control" Height="300" Width="700">
+    <Window.Resources>
+        <CollectionViewSource x:Key="Matches" Source="{Binding Context.Tournament.Matches}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Value.RoundOrder" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Value.IsWinners" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Value.Identifier" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <lview:TimeSpanToShortStringConverter x:Key="TimeSpanToShortStringConv" />
+        
+        <Style TargetType="DataGrid">
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserReorderColumns" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="CanUserSortColumns" Value="False" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <GroupBox Grid.Row="0" Margin="3" Header="Select a Match">
+            <DataGrid Margin="3" IsReadOnly="True" ItemsSource="{Binding Source={StaticResource Matches}}" SelectedValuePath="Value" SelectedValue="{Binding SelectedMatch}" AutoGenerateColumns="False">
+                <!--<DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{x:Static SystemColors.HighlightColor}"/>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{x:Static SystemColors.HighlightColor}"/>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"  Color="{x:Static SystemColors.HighlightColor}"/>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"  Color="{x:Static SystemColors.HighlightTextColor}"/>
+                </DataGrid.Resources>-->
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Value.State}" Value="complete">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Value.PlayerCount}" Value="0">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Value.PlayerCount}" Value="1">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Round" Binding="{Binding Value.RoundName}" />
+                    <DataGridTextColumn Header="ID" Binding="{Binding Value.Identifier}" />
+                    <DataGridTextColumn Header="Player 1">
+                        <DataGridTextColumn.Binding>
+                            <PriorityBinding>
+                                <Binding Path="Value.Player1.Name" />
+                                <Binding Path="Value.Player1SourceString" />
+                            </PriorityBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Player 2">
+                        <DataGridTextColumn.Binding>
+                            <PriorityBinding>
+                                <Binding Path="Value.Player2.Name" />
+                                <Binding Path="Value.Player2SourceString" />
+                            </PriorityBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Available" Binding="{Binding Value.TimeSinceAvailable, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                    <DataGridTextColumn Header="Station" Binding="{Binding Value.Player1.StationAssignment}" />
+                    <DataGridTextColumn Header="Assigned" Binding="{Binding Value.Player1.TimeSinceAssigned, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+        
+        <GroupBox Grid.Row="1" Margin="3" Header="Station Assignment">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <ListBox Grid.Column="0" Margin="3" SelectedItem="{Binding SelectedStation}" ItemsSource="{Binding Stations}" DisplayMemberPath="Name" SelectionMode="Single" />
+                <StackPanel Grid.Column="1" Width="250">
+                    <Button Margin="3" Content="Manage Stations..." IsEnabled="False" />
+                    <Button Margin="3" Content="Assign to Selected Station" Command="{Binding AssignStation}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedMatch}" Value="{x:Null}">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedStation}" Value="{x:Null}">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Margin="3" Content="Call Without Dedicated Station" Command="{Binding AssignNoStation}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedMatch}" Value="{x:Null}">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Window>

@@ -5,6 +5,7 @@ using System.Text;
 using Fizzi.Libraries.ChallongeApiWrapper;
 using Fizzi.Applications.ChallongeVisualization.Common;
 using System.ComponentModel;
+using System.Reactive.Linq;
 
 namespace Fizzi.Applications.ChallongeVisualization.Model
 {
@@ -25,7 +26,6 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         public bool Player2IsPrereqMatchLoser { get { return source.Player2IsPrereqMatchLoser; } }
         public int? Player2PrereqMatchId { get { return source.Player2PrereqMatchId; } }
 
-        public int Round { get { return source.Round; } }
         public string State { get { return source.State; } }
         public string Identifier { get { return source.Identifier; } }
 
@@ -40,6 +40,12 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         public ObservableMatch Player1PreviousMatch { get { return Player1PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player1PrereqMatchId.Value] : null; } }
         public ObservableMatch Player2PreviousMatch { get { return Player2PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player2PrereqMatchId.Value] : null; } }
+
+        public int PlayerCount { get { return (new bool[] { Player1Id.HasValue, Player2Id.HasValue }).Where(b => b).Count(); } }
+
+        //This property fixes the problem that can occur in double-elim brackets where challonge will call losers 2 losers 1 because losers 1 was all byes
+        //This happens when the tournament has 5-6, 9-12, 17-24, etc players.
+        public int Round { get; private set; }
 
         public string RoundName 
         { 
@@ -80,7 +86,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 switch (OwningContext.Tournament.TournamentType)
                 {
                     case "double elimination":
-                        return Round < 0 ? Math.Abs(Round) : Round - 1;
+                        return Round < 0 ? Math.Abs(Round) / 2 + 1 : Round;
                     default:
                         return Round;
                 }
@@ -116,12 +122,28 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         }
 
         public TimeSpan? TimeSinceAvailable { get { return StartedAt.HasValue ? DateTime.Now - StartedAt.Value : default(TimeSpan?); } }
+
+        public DateTime? TimeStationAssigned { get { return Player1 != null ? Player1.UtcTimeMatchAssigned : default(DateTime?); } }
+        public string AssignedStation { get { return Player1 != null ? Player1.StationAssignment : null; } }
+
+        public TimeSpan? TimeSinceAssigned { get { return TimeStationAssigned.HasValue ? DateTime.Now - TimeStationAssigned.Value : default(TimeSpan?); } }
         #endregion
 
         public ObservableMatch(Match match, TournamentContext context)
         {
             source = match;
             OwningContext = context;
+
+            //Round doesn't change, initialize RoundFixed
+            var totalPlayerCount = context.Tournament.ParticipantsCount;
+            var lowerBoundExponent = Math.Floor(Math.Log(totalPlayerCount, 2));
+
+            var lowerBound = Math.Pow(2, lowerBoundExponent);
+            if (match.Round < 0 && totalPlayerCount > lowerBound && totalPlayerCount <= lowerBound + (lowerBound / 2))
+            {
+                Round = match.Round - 1;
+            }
+            else Round = match.Round;
 
             //Listen for when properties changed to that changed events for the convenience properties can also be fired.
             this.PropertyChanged += (sender, e) =>
@@ -130,10 +152,12 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 {
                     case "Player1Id":
                         this.Raise("Player1", PropertyChanged);
+                        this.Raise("PlayerCount", PropertyChanged);
                         if (Player1 != null) Player1.IsMissing = false; //When a player gets added to a match, clear their missing flag
                         break;
                     case "Player2Id":
                         this.Raise("Player2", PropertyChanged);
+                        this.Raise("PlayerCount", PropertyChanged);
                         if (Player2 != null) Player2.IsMissing = false; //When a player gets added to a match, clear their missing flag
                         break;
                     case "Player1PrereqMatchId":
@@ -145,8 +169,26 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                     case "StartedAt":
                         this.Raise("TimeSinceAvailable", PropertyChanged);
                         break;
+                    case "State":
+                        //Clear station assignments if match state changes
+                        if (Player1 != null) Player1.ClearStationAssignment();
+                        if (Player2 != null) Player2.ClearStationAssignment();
+                        break;
                 }
             };
+        }
+
+        public void AssignPlayersToStation(string stationName)
+        {
+            if (PlayerCount == 2)
+            {
+                //Assign players to a station
+                Player1.StationAssignment = stationName;
+                Player1.UtcTimeMatchAssigned = DateTime.UtcNow;
+
+                Player2.StationAssignment = stationName;
+                Player2.UtcTimeMatchAssigned = DateTime.UtcNow;
+            }
         }
 
         public void Update(Match newData)

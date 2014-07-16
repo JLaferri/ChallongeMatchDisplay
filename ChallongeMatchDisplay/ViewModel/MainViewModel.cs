@@ -12,6 +12,7 @@ using System.Net;
 using System.Reactive.Linq;
 using System.IO;
 using RestSharp;
+using System.Collections.ObjectModel;
 
 namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 {
@@ -50,16 +51,31 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         public ICommand Back { get; private set; }
 
         public string ThreadUrl { get { return "http://smashboards.com/threads/challonge-match-display-application-helping-tournaments-run-faster.358186/"; } }
+
+        public ObservableCollection<Station> Stations { get; private set; }
+
+        private Station _selectedStation;
+        public Station SelectedStation { get { return _selectedStation; } set { this.RaiseAndSetIfChanged("SelectedStation", ref _selectedStation, value, PropertyChanged); } }
+
+        private ObservableMatch _selectedMatch;
+        public ObservableMatch SelectedMatch { get { return _selectedMatch; } set { this.RaiseAndSetIfChanged("SelectedMatch", ref _selectedMatch, value, PropertyChanged); } }
+
+        public ICommand AssignStation { get; private set; }
+        public ICommand AssignNoStation { get; private set; }
         
         public MainViewModel()
         {
+            Stations = new ObservableCollection<Station>();
+            Stations.Add(new Station("Stream"));
+            Stations.Add(new Station("1"));
+
             CurrentScreen = ScreenType.ApiKey;
 
             //Observable.Start(() =>
             //{
             //    try
             //    {
-            //        //I'm considering doing an http request to smashboards to find 
+            //        //I'm considering doing an http request to smashboards to find if a new version is released. I think smashboard's anti-DDOS protection is preventing it from working
             //        WebRequest request = WebRequest.Create(ThreadUrl);
             //        request.Credentials = CredentialCache.DefaultCredentials;
 
@@ -120,6 +136,16 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                         break;
                 }
                 CurrentScreen = (ScreenType)((int)CurrentScreen - 1);
+            });
+
+            AssignStation = Command.Create(() => true, () =>
+            {
+                SelectedMatch.AssignPlayersToStation(SelectedStation.Name);
+            });
+
+            AssignNoStation = Command.Create(() => true, () =>
+            {
+                SelectedMatch.AssignPlayersToStation("Any");
             });
         }
 

@@ -10,6 +10,7 @@
     <UserControl.Resources>
         <CollectionViewSource x:Key="Matches" Source="{Binding Context.Tournament.Matches}">
             <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Value.Player1.IsAssignedToStation" Direction="Descending" />
                 <scm:SortDescription PropertyName="Value.RoundOrder" Direction="Ascending" />
                 <scm:SortDescription PropertyName="Value.IsWinners" Direction="Ascending" />
                 <scm:SortDescription PropertyName="Value.Identifier" Direction="Ascending" />
@@ -45,13 +46,24 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Margin="3" Background="CornflowerBlue">
                             <TextBlock Margin="6" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Context.Tournament.Name}" />
                         </Border>
+
+                        <Button Grid.Column="1" Margin="3" Cursor="Hand" Click="TOButton_Click">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Border Background="CornflowerBlue">
+                                        <TextBlock Margin="6" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="TO" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                         
-                        <Button Grid.Column="1" Margin="3" Cursor="Hand" Command="{Binding Back}">
+                        <Button Grid.Column="2" Margin="3" Cursor="Hand" Command="{Binding Back}" Click="BackButton_Click">
                             <Button.Template>
                                 <ControlTemplate>
                                     <Border Background="CornflowerBlue">
@@ -69,7 +81,9 @@
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Code" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Station" />
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Timer" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ScrollBar" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Margin="3" Background="DimGray">
@@ -89,12 +103,60 @@
                         </Border>
 
                         <Border Grid.Column="4" Margin="3" Background="DimGray">
+                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Station" />
+                        </Border>
+                        
+                        <Border Grid.Column="5" Margin="3" Background="DimGray">
                             <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Timer" />
                         </Border>
                     </Grid>
                 </Grid>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden" FocusVisualStyle="{x:Null}">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" FocusVisualStyle="{x:Null}">
+                    <ScrollViewer.Template>
+                        <ControlTemplate TargetType="ScrollViewer">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="ScrollBar" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <ScrollContentPresenter Grid.Column="0" Grid.Row="0" Name="PART_ScrollContentPresenter" />
+                                <ScrollBar Orientation="Vertical" Grid.Column="1" Grid.Row="0" Name="PART_VerticalScrollBar" Value="{TemplateBinding VerticalOffset}"
+                                           Maximum="{TemplateBinding ScrollableHeight}" Minimum="0" ViewportSize="{TemplateBinding ViewportHeight}" 
+                                           Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}">
+                                    <ScrollBar.Template>
+                                        <ControlTemplate TargetType="ScrollBar">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition MaxHeight="0" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition MaxHeight="0" />
+                                                </Grid.RowDefinitions>
+                                                <Border Grid.RowSpan="3" CornerRadius="5" Background="CornflowerBlue" />
+                                                <Track Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
+                                                    <Track.Thumb>
+                                                        <Thumb>
+                                                            <Thumb.Template>
+                                                                <ControlTemplate>
+                                                                    <Border Margin="3" CornerRadius="4" Background="WhiteSmoke" Cursor="Hand" />
+                                                                </ControlTemplate>
+                                                            </Thumb.Template>
+                                                        </Thumb>
+                                                    </Track.Thumb>
+                                                </Track>
+                                                <!--<Border Margin="3" CornerRadius="5" Background="Blue" Name=""-->
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </ScrollBar.Template>
+                                </ScrollBar>
+                            </Grid>
+                        </ControlTemplate>
+                    </ScrollViewer.Template>
                     <ItemsControl ItemsSource="{Binding Source={StaticResource Matches}}" FocusVisualStyle="{x:Null}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -105,13 +167,9 @@
                                                 <DataTrigger Binding="{Binding State}" Value="complete">
                                                     <Setter Property="Visibility" Value="Collapsed" />
                                                 </DataTrigger>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding Player1Id}" Value="{x:Null}" />
-                                                        <Condition Binding="{Binding Player2Id}" Value="{x:Null}" />
-                                                    </MultiDataTrigger.Conditions>
+                                                <DataTrigger Binding="{Binding PlayerCount}" Value="0">
                                                     <Setter Property="Visibility" Value="Collapsed" />
-                                                </MultiDataTrigger>
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Grid.Style>
@@ -121,6 +179,7 @@
                                         <ColumnDefinition Width="Auto" SharedSizeGroup="Code" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="Station" />
                                         <ColumnDefinition Width="Auto" SharedSizeGroup="Timer" />
                                     </Grid.ColumnDefinitions>
 
@@ -135,12 +194,10 @@
                                     <CheckBox Grid.Column="2" Margin="3" IsChecked="{Binding Player1.IsMissing}" FocusVisualStyle="{x:Null}">
                                         <CheckBox.Style>
                                             <Style TargetType="CheckBox">
+                                                <Setter Property="IsEnabled" Value="False" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
-                                                        <Setter Property="IsEnabled" Value="False" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
-                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    <DataTrigger Binding="{Binding PlayerCount}" Value="2">
+                                                        <Setter Property="IsEnabled" Value="True" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -198,12 +255,10 @@
                                     <CheckBox Grid.Column="3" Margin="3" IsChecked="{Binding Player2.IsMissing}" FocusVisualStyle="{x:Null}">
                                         <CheckBox.Style>
                                             <Style TargetType="CheckBox">
+                                                <Setter Property="IsEnabled" Value="False" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Player1Id}" Value="{x:Null}">
-                                                        <Setter Property="IsEnabled" Value="False" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding Player2Id}" Value="{x:Null}">
-                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    <DataTrigger Binding="{Binding PlayerCount}" Value="2">
+                                                        <Setter Property="IsEnabled" Value="True" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -258,7 +313,21 @@
                                         </CheckBox.Template>
                                     </CheckBox>
 
-                                    <Border Grid.Column="4" Margin="3" Background="{Binding TimeSinceAvailable, Converter={StaticResource TimeSpanToBrushConv}}">
+                                    <Border Grid.Column="4" Margin="3">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="Gray" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Player1.IsAssignedToStation}" Value="True">
+                                                        <Setter Property="Background" Value="SlateBlue" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Player1.StationAssignment}" />
+                                    </Border>
+                                    
+                                    <Border Grid.Column="5" Margin="3" Background="{Binding TimeSinceAvailable, Converter={StaticResource TimeSpanToBrushConv}}">
                                         <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"
                                                    Text="{Binding TimeSinceAvailable, Converter={StaticResource TimeSpanToShortStringConv}}" />
                                     </Border>

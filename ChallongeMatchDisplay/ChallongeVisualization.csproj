@@ -103,8 +103,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\ParticipantMiscProperties.cs" />
+    <Compile Include="ViewModel\Station.cs" />
     <Compile Include="View\MatchDisplayView.xaml.cs">
       <DependentUpon>MatchDisplayView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\OrganizerWindow.xaml.cs">
+      <DependentUpon>OrganizerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ProgressToSizeConverter.cs" />
     <Compile Include="View\TimeSpanToBrushConverter.cs" />
@@ -142,6 +146,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\MatchDisplayView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\OrganizerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

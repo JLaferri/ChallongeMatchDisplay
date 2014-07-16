@@ -45,15 +45,13 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         public int? MaxRoundNumber { get; private set; }
         public int? MinRoundNumber { get; private set; }
 
-        public ObservableTournament(Tournament tournament, IEnumerable<Participant> playerList, IEnumerable<Match> matchList, TournamentContext context)
+        public ObservableTournament(Tournament tournament, TournamentContext context)
         {
             source = tournament;
             OwningContext = context;
-
-            initialize(playerList, matchList);
         }
 
-        public void initialize(IEnumerable<Participant> playerList, IEnumerable<Match> matchList)
+        public void Initialize(IEnumerable<Participant> playerList, IEnumerable<Match> matchList)
         {
             Participants = playerList.ToDictionary(p => p.Id, p => new ObservableParticipant(p, OwningContext));
             Matches = matchList.ToDictionary(m => m.Id, m => new ObservableMatch(m, OwningContext));
@@ -81,7 +79,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             //If true, re-initialize, else update
             if (participantsChanged || matchCountChanged)
             {
-                initialize(playerList, matchList);
+                Initialize(playerList, matchList);
             }
             else
             {

@@ -50,5 +50,38 @@ namespace Fizzi.Applications.ChallongeVisualization.View
                 e.Handled = true;
             }
         }
+
+        OrganizerWindow organizerWindow = null;
+
+        private void TOButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (organizerWindow == null)
+            {
+                organizerWindow = new OrganizerWindow()
+                {
+                    DataContext = this.DataContext
+                };
+                organizerWindow.Closed += (sender2, e2) => organizerWindow = null;
+                organizerWindow.Show();
+            }
+            else
+            {
+                if (organizerWindow.WindowState == System.Windows.WindowState.Minimized)
+                {
+                    organizerWindow.WindowState = System.Windows.WindowState.Normal;
+                }
+
+                organizerWindow.Activate();
+            }
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (organizerWindow != null)
+            {
+                organizerWindow.Close();
+                organizerWindow = null;
+            }
+        }
     }
 }

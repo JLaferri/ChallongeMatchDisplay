@@ -43,8 +43,25 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         public TimeSpan? TimeSinceMissing { get { return UtcTimeMissing.HasValue ? DateTime.UtcNow - UtcTimeMissing.Value : default(TimeSpan?); } }
 
+        public DateTime? UtcTimeMatchAssigned
+        {
+            get { return miscProperties.UtcTimeMatchAssigned; }
+            set { miscPropertySetter("UtcTimeMatchAssigned", value, UtcTimeMatchAssigned, newVal => miscProperties.UtcTimeMatchAssigned = newVal); }
+        }
+
+        public TimeSpan? TimeSinceAssigned { get { return UtcTimeMatchAssigned.HasValue ? DateTime.UtcNow - UtcTimeMatchAssigned.Value : default(TimeSpan?); } }
+
+        public string StationAssignment
+        {
+            get { return miscProperties.StationAssignment; }
+            set { miscPropertySetter("StationAssignment", value, StationAssignment, newVal => miscProperties.StationAssignment = newVal); }
+        }
+
+        public bool IsAssignedToStation { get { return UtcTimeMatchAssigned.HasValue; } }
+
         private void miscPropertySetter<T>(string property, T newValue, T currentValue, Action<T> setProperty)
         {
+            //TODO: Throttle SetParticipantMisc so that only one call is made for changes that happen in quick succession
             if (!object.Equals(newValue, currentValue))
             {
                 setProperty(newValue);
@@ -67,6 +84,13 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             miscProperties = ParticipantMiscProperties.Parse(Misc);
             OwningContext = context;
 
+            //Check tournament start date, if it is later than missing time, clear the player's missing status
+            var tournamentStart = context.Tournament.StartedAt;
+            if (UtcTimeMissing.HasValue && tournamentStart.HasValue && UtcTimeMissing.Value.ToLocalTime() < tournamentStart.Value)
+            {
+                UtcTimeMissing = null;
+            }
+
             //Listen for when properties changed to that changed events for the convenience properties can also be fired.
             this.PropertyChanged += (sender, e) =>
             {
@@ -79,13 +103,25 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
                         //Check for changes from old to new, raise those properties if changed
                         if (!object.Equals(oldMiscProperties.UtcTimeMissing, miscProperties.UtcTimeMissing)) this.Raise("UtcTimeMissing", PropertyChanged);
+                        if (!object.Equals(oldMiscProperties.UtcTimeMatchAssigned, miscProperties.UtcTimeMatchAssigned)) this.Raise("UtcTimeMatchAssigned", PropertyChanged);
+                        if (!object.Equals(oldMiscProperties.StationAssignment, miscProperties.StationAssignment)) this.Raise("StationAssignment", PropertyChanged);
                         break;
                     case "UtcTimeMissing":
                         this.Raise("IsMissing", PropertyChanged);
                         this.Raise("TimeSinceMissing", PropertyChanged);
                         break;
+                    case "UtcTimeMatchAssigned":
+                        this.Raise("TimeSinceAssigned", PropertyChanged);
+                        this.Raise("IsAssignedToStation", PropertyChanged);
+                        break;
                 }
             };
+        }
+
+        public void ClearStationAssignment()
+        {
+            UtcTimeMatchAssigned = null;
+            StationAssignment = null;
         }
 
         public void Update(Participant newData)
@@ -107,6 +143,12 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             if (UtcTimeMissing.HasValue)
             {
                 this.Raise("TimeSinceMissing", PropertyChanged);
+            }
+
+            //Same as above but for match assignment
+            if (UtcTimeMatchAssigned.HasValue)
+            {
+                this.Raise("TimeSinceAssigned", PropertyChanged);
             }
         }
 

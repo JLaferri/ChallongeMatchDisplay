@@ -62,7 +62,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             this.tournamentId = tournamentId;
 
             var queryResults = queryData();
-            if (queryResults != null) Tournament = new ObservableTournament(queryResults.Item1, queryResults.Item2, queryResults.Item3, this);
+            if (queryResults != null)
+            {
+                Tournament = new ObservableTournament(queryResults.Item1, this);
+                Tournament.Initialize(queryResults.Item2, queryResults.Item3);
+            }
         }
 
         public void StartPolling(TimeSpan timeInterval)
@@ -92,7 +96,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
             if (queryResults != null)
             {
-                if (Tournament == null) Tournament = new ObservableTournament(queryResults.Item1, queryResults.Item2, queryResults.Item3, this);
+                if (Tournament == null)
+                {
+                    Tournament = new ObservableTournament(queryResults.Item1, this);
+                    Tournament.Initialize(queryResults.Item2, queryResults.Item3);
+                }
                 else Tournament.Update(queryResults.Item1, queryResults.Item2, queryResults.Item3);
             }
         }
