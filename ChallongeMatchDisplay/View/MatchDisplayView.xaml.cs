@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Fizzi.Applications.ChallongeVisualization.ViewModel;
 
 namespace Fizzi.Applications.ChallongeVisualization.View
 {
@@ -57,11 +58,19 @@ namespace Fizzi.Applications.ChallongeVisualization.View
         {
             if (organizerWindow == null)
             {
+                var mvm = this.DataContext as MainViewModel;
+                var organizerVm = mvm.OrgViewModel;
+
                 organizerWindow = new OrganizerWindow()
                 {
-                    DataContext = this.DataContext
+                    DataContext = organizerVm
                 };
-                organizerWindow.Closed += (sender2, e2) => organizerWindow = null;
+
+                organizerWindow.Closed += (sender2, e2) =>
+                {
+                    organizerWindow = null;
+                };
+
                 organizerWindow.Show();
             }
             else
@@ -80,7 +89,6 @@ namespace Fizzi.Applications.ChallongeVisualization.View
             if (organizerWindow != null)
             {
                 organizerWindow.Close();
-                organizerWindow = null;
             }
         }
     }

@@ -7,11 +7,18 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 {
     class ParticipantMiscProperties
     {
-        public DateTime? UtcTimeMissing { get; set; }
-        public DateTime? UtcTimeMatchAssigned { get; set; }
-        public string StationAssignment { get; set; }
+        public DateTime? UtcTimeMissing { get; private set; }
+        public DateTime? UtcTimeMatchAssigned { get; private set; }
+        public string StationAssignment { get; private set; }
 
         private ParticipantMiscProperties() { }
+
+        public ParticipantMiscProperties(DateTime? utcTimeMissing, DateTime? utcTimeMatchAssigned, string stationAssignment)
+        {
+            UtcTimeMissing = utcTimeMissing;
+            UtcTimeMatchAssigned = utcTimeMatchAssigned;
+            StationAssignment = stationAssignment;
+        }
 
         public static ParticipantMiscProperties Parse(string miscString)
         {

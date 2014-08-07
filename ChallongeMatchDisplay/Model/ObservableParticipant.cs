@@ -26,54 +26,33 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         public TournamentContext OwningContext { get; private set; }
 
         #region Convenience Properties
-        private ParticipantMiscProperties miscProperties;
-        private DateTime lastManualMiscChange = DateTime.MinValue;
+        public Dirtyable<ParticipantMiscProperties> MiscProperties { get; private set; }
 
         public bool IsMissing
         {
             get { return UtcTimeMissing.HasValue; }
-            set { UtcTimeMissing = value ? DateTime.UtcNow : default(DateTime?); }
+            set { SetMissing(value); }
         }
 
-        public DateTime? UtcTimeMissing
-        {
-            get { return miscProperties.UtcTimeMissing; }
-            set { miscPropertySetter("UtcTimeMissing", value, UtcTimeMissing, newVal => miscProperties.UtcTimeMissing = newVal); }
-        }
+        public DateTime? UtcTimeMissing { get { return MiscProperties.Value.UtcTimeMissing; } }
 
         public TimeSpan? TimeSinceMissing { get { return UtcTimeMissing.HasValue ? DateTime.UtcNow - UtcTimeMissing.Value : default(TimeSpan?); } }
 
-        public DateTime? UtcTimeMatchAssigned
-        {
-            get { return miscProperties.UtcTimeMatchAssigned; }
-            set { miscPropertySetter("UtcTimeMatchAssigned", value, UtcTimeMatchAssigned, newVal => miscProperties.UtcTimeMatchAssigned = newVal); }
-        }
+        public DateTime? UtcTimeMatchAssigned { get { return MiscProperties.Value.UtcTimeMatchAssigned; } }
 
         public TimeSpan? TimeSinceAssigned { get { return UtcTimeMatchAssigned.HasValue ? DateTime.UtcNow - UtcTimeMatchAssigned.Value : default(TimeSpan?); } }
 
-        public string StationAssignment
-        {
-            get { return miscProperties.StationAssignment; }
-            set { miscPropertySetter("StationAssignment", value, StationAssignment, newVal => miscProperties.StationAssignment = newVal); }
-        }
+        public string StationAssignment { get { return MiscProperties.Value.StationAssignment; } }
 
         public bool IsAssignedToStation { get { return UtcTimeMatchAssigned.HasValue; } }
 
         private void miscPropertySetter<T>(string property, T newValue, T currentValue, Action<T> setProperty)
         {
-            //TODO: Throttle SetParticipantMisc so that only one call is made for changes that happen in quick succession
             if (!object.Equals(newValue, currentValue))
             {
                 setProperty(newValue);
 
                 this.Raise(property, PropertyChanged);
-                
-                //Commit changes to misc property on challonge
-                source.Misc = miscProperties.ToString();
-                Observable.Start(() => OwningContext.Portal.SetParticipantMisc(OwningContext.Tournament.Id, this.Id, source.Misc));
-                
-                //Store change time to ensure misc changed wont be raised until one full poll frequency
-                lastManualMiscChange = DateTime.UtcNow;
             }
         }
         #endregion
@@ -81,14 +60,20 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         public ObservableParticipant(Participant participant, TournamentContext context)
         {
             source = participant;
-            miscProperties = ParticipantMiscProperties.Parse(Misc);
+            MiscProperties = new Dirtyable<ParticipantMiscProperties>(ParticipantMiscProperties.Parse(Misc));
             OwningContext = context;
 
-            //Check tournament start date, if it is later than missing time, clear the player's missing status
+            //Check tournament start date, if it is later than missing time, clear the player's missing status. This happens in the case of a bracket reset
             var tournamentStart = context.Tournament.StartedAt;
             if (UtcTimeMissing.HasValue && tournamentStart.HasValue && UtcTimeMissing.Value.ToLocalTime() < tournamentStart.Value)
             {
-                UtcTimeMissing = null;
+                SetMissing(false);
+            }
+
+            //Do a similar check on station assignment time
+            if (UtcTimeMatchAssigned.HasValue && tournamentStart.HasValue && UtcTimeMatchAssigned.Value.ToLocalTime() < tournamentStart.Value)
+            {
+                ClearStationAssignment();
             }
 
             //Listen for when properties changed to that changed events for the convenience properties can also be fired.
@@ -98,8 +83,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 {
                     case "Misc":
                         //Handle misc string changes by parsing the new values and raising the properties that have changed
-                        var oldMiscProperties = miscProperties;
-                        miscProperties = ParticipantMiscProperties.Parse(Misc);
+                        var oldMiscProperties = MiscProperties.Value;
+
+                        //Suggest new value for misc properties. This will be ignored if dirty
+                        MiscProperties.SuggestValue(ParticipantMiscProperties.Parse(Misc));
+                        var miscProperties = MiscProperties.Value;
 
                         //Check for changes from old to new, raise those properties if changed
                         if (!object.Equals(oldMiscProperties.UtcTimeMissing, miscProperties.UtcTimeMissing)) this.Raise("UtcTimeMissing", PropertyChanged);
@@ -118,10 +106,42 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             };
         }
 
+        public void SetMissing(bool isMissing)
+        {
+            DateTime? utcTimeMissing = isMissing ? DateTime.UtcNow : default(DateTime?);
+
+            MiscProperties.Value = new ParticipantMiscProperties(utcTimeMissing, MiscProperties.Value.UtcTimeMatchAssigned, MiscProperties.Value.StationAssignment);
+
+            this.Raise("UtcTimeMissing", PropertyChanged);
+        }
+
+        public void AssignStation(string stationName)
+        {
+            if (string.IsNullOrWhiteSpace(stationName)) throw new ArgumentException("Station name must contain characters.");
+
+            //Free previously assigned station
+            Stations.Instance.AttemptFreeStation(MiscProperties.Value.StationAssignment);
+
+            //This will mark the properties as dirty which will cause them to be committed to the server on the next scan
+            MiscProperties.Value = new ParticipantMiscProperties(MiscProperties.Value.UtcTimeMissing, DateTime.UtcNow, stationName);
+
+            //Attempt to set station in use
+            Stations.Instance.AttemptClaimStation(stationName);
+
+            this.Raise("UtcTimeMatchAssigned", PropertyChanged);
+            this.Raise("StationAssignment", PropertyChanged);
+        }
+
         public void ClearStationAssignment()
         {
-            UtcTimeMatchAssigned = null;
-            StationAssignment = null;
+            //Attempt to set station open
+            Stations.Instance.AttemptFreeStation(MiscProperties.Value.StationAssignment);
+
+            //This will mark the properties as dirty which will cause them to be committed to the server on the next scan
+            MiscProperties.Value = new ParticipantMiscProperties(MiscProperties.Value.UtcTimeMissing, null, null);
+
+            this.Raise("UtcTimeMatchAssigned", PropertyChanged);
+            this.Raise("StationAssignment", PropertyChanged);
         }
 
         public void Update(Participant newData)
@@ -129,13 +149,9 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             var oldData = source;
             source = newData;
 
-            var recentLocalMiscChange = OwningContext.CurrentPollInterval.HasValue && 
-                DateTime.UtcNow - lastManualMiscChange < OwningContext.CurrentPollInterval.Value;
-
             //Raise notify event for any property that has changed value
             foreach (var property in participantProperties)
             {
-                if (recentLocalMiscChange && property.Name == "Misc") continue; //When a local change has recently happened to Misc, do not accept change from server
                 if (!object.Equals(property.GetValue(oldData, null), property.GetValue(newData, null))) this.Raise(property.Name, PropertyChanged);
             }
 

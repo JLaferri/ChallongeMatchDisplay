@@ -85,5 +85,19 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
             var response = client.Execute(request);
             throwOnError(response);
         }
+
+        public void ReportMatchWinner(int tournamentId, int matchId, int winnerId, params SetScore[] scores)
+        {
+            var request = new RestRequest(string.Format("tournaments/{0}/matches/{1}.xml", tournamentId, matchId), Method.PUT);
+            request.AddParameter("api_key", ApiKey);
+            request.AddParameter("match[winner_id]", winnerId);
+
+            if (scores == null || scores.Length == 0) scores = new SetScore[] { new SetScore { Player1Score = 0, Player2Score = 0 } };
+
+            request.AddParameter("match[scores_csv]", scores.Select(ss => ss.ToString()).Aggregate((one, two) => string.Format("{0},{1}", one, two)));
+
+            var response = client.Execute(request);
+            throwOnError(response);
+        }
     }
 }

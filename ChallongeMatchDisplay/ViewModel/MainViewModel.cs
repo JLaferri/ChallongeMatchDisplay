@@ -33,10 +33,15 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 
         public Tournament[] TournamentCollection { get; private set; }
 
+        private List<DisplayMatch> _displayMatches;
+        public List<DisplayMatch> DisplayMatches { get { return _displayMatches; } set { this.RaiseAndSetIfChanged("DisplayMatches", ref _displayMatches, value, PropertyChanged); } }
+
         private Tournament _selectedTournament;
         public Tournament SelectedTournament { get { return _selectedTournament; } set { this.RaiseAndSetIfChanged("SelectedTournament", ref _selectedTournament, value, PropertyChanged); } }
 
         public TournamentContext Context { get; private set; }
+
+        private PropertyChangedEventHandler matchesChangedHandler;
 
         private bool _isError;
         public bool IsError { get { return _isError; } set { this.RaiseAndSetIfChanged("IsError", ref _isError, value, PropertyChanged); } }
@@ -52,23 +57,10 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 
         public string ThreadUrl { get { return "http://smashboards.com/threads/challonge-match-display-application-helping-tournaments-run-faster.358186/"; } }
 
-        public ObservableCollection<Station> Stations { get; private set; }
-
-        private Station _selectedStation;
-        public Station SelectedStation { get { return _selectedStation; } set { this.RaiseAndSetIfChanged("SelectedStation", ref _selectedStation, value, PropertyChanged); } }
-
-        private ObservableMatch _selectedMatch;
-        public ObservableMatch SelectedMatch { get { return _selectedMatch; } set { this.RaiseAndSetIfChanged("SelectedMatch", ref _selectedMatch, value, PropertyChanged); } }
-
-        public ICommand AssignStation { get; private set; }
-        public ICommand AssignNoStation { get; private set; }
+        public OrganizerViewModel OrgViewModel { get; private set; }
         
         public MainViewModel()
         {
-            Stations = new ObservableCollection<Station>();
-            Stations.Add(new Station("Stream"));
-            Stations.Add(new Station("1"));
-
             CurrentScreen = ScreenType.ApiKey;
 
             //Observable.Start(() =>
@@ -115,8 +107,33 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                         }
                         break;
                     case ScreenType.TournamentSelection:
+                        if (Context != null) Context.Dispose();
+                        if (matchesChangedHandler != null) Context.Tournament.PropertyChanged -= matchesChangedHandler;
+
                         Context = new TournamentContext(Portal, SelectedTournament.Id);
-                        Context.StartPolling(TimeSpan.FromSeconds(3));
+                        Context.StartSynchronization(TimeSpan.FromMilliseconds(500), 6);
+
+                        //Load up matches into display matches. This is done to allow ordering of assigned matches over unassigned matches without having to refresh the view
+                        DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Assigned))
+                            .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
+
+                        //This handler is used to keep matches display matches in sync with tournament context matches. If the matches in the context change, re-generate the display matches
+                        matchesChangedHandler = new PropertyChangedEventHandler((sender, e) =>
+                        {
+                            if (e.PropertyName == "Matches")
+                            {
+                                if (Context.Tournament.Matches == null) DisplayMatches = null;
+                                else
+                                {
+                                    DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Assigned))
+                                        .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
+                                }
+                            }
+                        });
+                        Context.Tournament.PropertyChanged += matchesChangedHandler;
+
+                        //Create TO View Model
+                        OrgViewModel = new OrganizerViewModel(this);
                         break;
                 }
 
@@ -134,19 +151,18 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                     case ScreenType.TournamentSelection:
                         ApiKey = null;
                         break;
+                    case ScreenType.PendingMatchView:
+                        if (OrgViewModel != null)
+                        {
+                            OrgViewModel.Dispose();
+                            OrgViewModel = null;
+                        }
+                        break;
                 }
                 CurrentScreen = (ScreenType)((int)CurrentScreen - 1);
             });
 
-            AssignStation = Command.Create(() => true, () =>
-            {
-                SelectedMatch.AssignPlayersToStation(SelectedStation.Name);
-            });
-
-            AssignNoStation = Command.Create(() => true, () =>
-            {
-                SelectedMatch.AssignPlayersToStation("Any");
-            });
+            
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

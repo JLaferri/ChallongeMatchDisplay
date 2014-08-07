@@ -123,11 +123,15 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         public TimeSpan? TimeSinceAvailable { get { return StartedAt.HasValue ? DateTime.Now - StartedAt.Value : default(TimeSpan?); } }
 
-        public DateTime? TimeStationAssigned { get { return Player1 != null ? Player1.UtcTimeMatchAssigned : default(DateTime?); } }
-        public string AssignedStation { get { return Player1 != null ? Player1.StationAssignment : null; } }
-
-        public TimeSpan? TimeSinceAssigned { get { return TimeStationAssigned.HasValue ? DateTime.Now - TimeStationAssigned.Value : default(TimeSpan?); } }
         #endregion
+
+        private bool _isMatchInProgress;
+        public bool IsMatchInProgress { get { return _isMatchInProgress; } set { this.RaiseAndSetIfChanged("IsMatchInProgress", ref _isMatchInProgress, value, PropertyChanged); } }
+
+        private string _stationAssignment;
+        public string StationAssignment { get { return _stationAssignment; } set { this.RaiseAndSetIfChanged("StationAssignment", ref _stationAssignment, value, PropertyChanged); } }
+
+        private Queue<ObservableParticipant> player1Queue = new Queue<ObservableParticipant>();
 
         public ObservableMatch(Match match, TournamentContext context)
         {
@@ -176,6 +180,38 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                         break;
                 }
             };
+
+            var propertyChangedObs = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(h => this.PropertyChanged += h, h => this.PropertyChanged -= h);
+
+            //The following will create an observable sequence that will raise an event either when player1 changes or when player1's station assignment status changes
+            var player1ChangedOrAssignmentChanged = propertyChangedObs.Where(a => a.EventArgs.PropertyName == "Player1")
+                .Select(_ => 
+                {
+                    if (Player1 != null)
+                    {
+                        return Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(h =>
+                            {
+                                player1Queue.Enqueue(Player1);
+                                Player1.PropertyChanged += h;
+                            }, h =>
+                            {
+                                player1Queue.Dequeue().PropertyChanged -= h;
+                            })
+                            .Where(a => a.EventArgs.PropertyName == "IsAssignedToStation" || a.EventArgs.PropertyName == "StationAssignment")
+                            .Select(_2 => EventArgs.Empty).StartWith(EventArgs.Empty);
+                    }
+                    else return Observable.Return(EventArgs.Empty);
+                }).Switch();
+            
+            //Subscribe to above observable sequence to maintain the assignment state of the match
+            player1ChangedOrAssignmentChanged.Subscribe(_ =>
+            {
+                IsMatchInProgress = Player1 != null && Player1.IsAssignedToStation;
+                StationAssignment = Player1 == null ? null : Player1.StationAssignment;
+            });
+
+            //Forcibly raise player1 property notification to assign station status
+            this.Raise("Player1", PropertyChanged);
         }
 
         public void AssignPlayersToStation(string stationName)
@@ -183,11 +219,28 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             if (PlayerCount == 2)
             {
                 //Assign players to a station
-                Player1.StationAssignment = stationName;
-                Player1.UtcTimeMatchAssigned = DateTime.UtcNow;
+                Player1.AssignStation(stationName);
+                Player2.AssignStation(stationName);
+            }
+        }
 
-                Player2.StationAssignment = stationName;
-                Player2.UtcTimeMatchAssigned = DateTime.UtcNow;
+        public void ReportPlayer1Victory(params SetScore[] setCounts)
+        {
+            if (Player1Id != null)
+            {
+                var context = OwningContext;
+                context.Portal.ReportMatchWinner(context.Tournament.Id, Id, Player1Id.Value, setCounts);
+                context.Refresh();
+            }
+        }
+
+        public void ReportPlayer2Victory(params SetScore[] setCounts)
+        {
+            if (Player2Id != null)
+            {
+                var context = OwningContext;
+                context.Portal.ReportMatchWinner(context.Tournament.Id, Id, Player2Id.Value, setCounts);
+                context.Refresh();
             }
         }
 

@@ -10,6 +10,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Fizzi.Applications.ChallongeVisualization.ViewModel;
+using Fizzi.Applications.ChallongeVisualization.Common;
 
 namespace Fizzi.Applications.ChallongeVisualization.View
 {
@@ -21,6 +23,23 @@ namespace Fizzi.Applications.ChallongeVisualization.View
         public OrganizerWindow()
         {
             InitializeComponent();
+        }
+
+        private void ImportStationsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = this.DataContext as OrganizerViewModel;
+
+            if (vm != null)
+            {
+                //try
+                //{
+                    vm.ImportStationFile.Execute(this);
+                //}
+                //catch (Exception ex)
+                //{
+                //    MessageBox.Show(this, "An error was encountered: " + ex.NewLineDelimitedMessages(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                //}
+            }
         }
     }
 }

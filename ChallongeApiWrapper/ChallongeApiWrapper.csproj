@@ -47,6 +47,7 @@
     <Compile Include="ChallongePortal.cs" />
     <Compile Include="Match.cs" />
     <Compile Include="Participant.cs" />
+    <Compile Include="SetScore.cs" />
     <Compile Include="Tournament.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

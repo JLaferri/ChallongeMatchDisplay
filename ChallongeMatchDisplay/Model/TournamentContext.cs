@@ -18,8 +18,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         public ChallongePortal Portal { get; private set; }
 
-        private TimeSpan? _currentPollInterval;
-        public TimeSpan? CurrentPollInterval { get { return _currentPollInterval; } private set { this.RaiseAndSetIfChanged("CurrentPollInterval", ref _currentPollInterval, value, PropertyChanged); } }
+        private TimeSpan? _scanInterval;
+        public TimeSpan? ScanInterval { get { return _scanInterval; } private set { this.RaiseAndSetIfChanged("ScanInterval", ref _scanInterval, value, PropertyChanged); } }
+
+        private int? _pollEvery;
+        public int? PollEvery { get { return _pollEvery; } private set { this.RaiseAndSetIfChanged("PollEvery", ref _pollEvery, value, PropertyChanged); } }
 
         private ObservableTournament _tournament;
         public ObservableTournament Tournament { get { return _tournament; } private set { this.RaiseAndSetIfChanged("Tournament", ref _tournament, value, PropertyChanged); } }
@@ -69,21 +72,29 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             }
         }
 
-        public void StartPolling(TimeSpan timeInterval)
+        public void StartSynchronization(TimeSpan timeInterval, int pollEvery)
         {
-            StopPolling(); //Ensure polling has stopped before starting
+            StopSynchronization(); //Ensure polling has stopped before starting
 
-            pollSubscription = Observable.Interval(timeInterval).Subscribe(_ => Refresh());
-            CurrentPollInterval = timeInterval;
+            pollSubscription = Observable.Interval(timeInterval).Subscribe(num => 
+            {
+                //During a scan, either commit local changes or poll 
+                if (num % pollEvery == 0) Refresh();
+                else CommitChanges();
+            });
+
+            ScanInterval = timeInterval;
+            PollEvery = pollEvery;
         }
 
-        public void StopPolling()
+        public void StopSynchronization()
         {
             if (pollSubscription != null)
             {
                 pollSubscription.Dispose();
                 pollSubscription = null;
-                CurrentPollInterval = null;
+                ScanInterval = null;
+                PollEvery = null;
             }
         }
 
@@ -105,9 +116,21 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             }
         }
 
+        public void CommitChanges()
+        {
+            if (Tournament != null && Tournament.Participants != null)
+            {
+                foreach (var p in Tournament.Participants)
+                {
+                    var miscDirtyable = p.Value.MiscProperties;
+                    miscDirtyable.CommitIfDirty(() => Portal.SetParticipantMisc(Tournament.Id, p.Value.Id, miscDirtyable.Value.ToString()));
+                }
+            }
+        }
+
         public void Dispose()
         {
-            StopPolling();
+            StopSynchronization();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

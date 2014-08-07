@@ -3,17 +3,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
-        Title="Tournament Organizer Control" Height="300" Width="700">
+        Title="Tournament Organizer Control" Height="800" Width="500">
     <Window.Resources>
-        <CollectionViewSource x:Key="Matches" Source="{Binding Context.Tournament.Matches}">
+        <CollectionViewSource x:Key="Matches" Source="{Binding OpenMatches}">
             <CollectionViewSource.SortDescriptions>
-                <scm:SortDescription PropertyName="Value.RoundOrder" Direction="Ascending" />
-                <scm:SortDescription PropertyName="Value.IsWinners" Direction="Ascending" />
-                <scm:SortDescription PropertyName="Value.Identifier" Direction="Ascending" />
+                <scm:SortDescription PropertyName="RoundOrder" Direction="Ascending" />
+                <scm:SortDescription PropertyName="IsWinners" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Identifier" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <CollectionViewSource x:Key="Stations" Source="{Binding OpenStations}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Order" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
 
         <lview:TimeSpanToShortStringConverter x:Key="TimeSpanToShortStringConv" />
+        <lview:ObjectEqualityConverter x:Key="ObjectEqualityConv" />
         
         <Style TargetType="DataGrid">
             <Setter Property="CanUserAddRows" Value="False" />
@@ -28,53 +35,50 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
         <GroupBox Grid.Row="0" Margin="3" Header="Select a Match">
-            <DataGrid Margin="3" IsReadOnly="True" ItemsSource="{Binding Source={StaticResource Matches}}" SelectedValuePath="Value" SelectedValue="{Binding SelectedMatch}" AutoGenerateColumns="False">
-                <!--<DataGrid.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{x:Static SystemColors.HighlightColor}"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{x:Static SystemColors.HighlightColor}"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"  Color="{x:Static SystemColors.HighlightColor}"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"  Color="{x:Static SystemColors.HighlightTextColor}"/>
-                </DataGrid.Resources>-->
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
+            <DataGrid Name="MatchesDataGrid" Margin="3" IsReadOnly="True" ItemsSource="{Binding Source={StaticResource Matches}}" SelectedItem="{Binding SelectedMatch}" SelectionMode="Single" AutoGenerateColumns="False">
+                <DataGrid.Resources>
+                    <Style x:Key="SelectedStyle" TargetType="DataGridCell">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Value.State}" Value="complete">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Value.PlayerCount}" Value="0">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Value.PlayerCount}" Value="1">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                            <DataTrigger Value="True">
+                                <DataTrigger.Binding>
+                                    <MultiBinding Converter="{StaticResource ObjectEqualityConv}">
+                                        <Binding />
+                                        <Binding ElementName="MatchesDataGrid" Path="DataContext.SelectedMatch" />
+                                    </MultiBinding>
+                                </DataTrigger.Binding>
+                                <Setter Property="Background" Value="{x:Static SystemColors.HighlightBrush}" />
+                                <Setter Property="BorderBrush" Value="{x:Static SystemColors.HighlightBrush}" />
+                                <Setter Property="Foreground" Value="White" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </DataGrid.RowStyle>
+                </DataGrid.Resources>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Round" Binding="{Binding Value.RoundName}" />
-                    <DataGridTextColumn Header="ID" Binding="{Binding Value.Identifier}" />
-                    <DataGridTextColumn Header="Player 1">
+                    <DataGridTextColumn Header="Round" Binding="{Binding RoundName}" CellStyle="{StaticResource SelectedStyle}" />
+                    <DataGridTextColumn Header="ID" Binding="{Binding Identifier}" CellStyle="{StaticResource SelectedStyle}" />
+                    <DataGridTextColumn Header="Player 1" Width="*" CellStyle="{StaticResource SelectedStyle}" >
                         <DataGridTextColumn.Binding>
                             <PriorityBinding>
-                                <Binding Path="Value.Player1.Name" />
-                                <Binding Path="Value.Player1SourceString" />
+                                <Binding Path="Player1.Name" />
+                                <Binding Path="Player1SourceString" />
                             </PriorityBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Player 2">
+                    <DataGridTextColumn Header="Player 2" Width="*" CellStyle="{StaticResource SelectedStyle}">
                         <DataGridTextColumn.Binding>
                             <PriorityBinding>
-                                <Binding Path="Value.Player2.Name" />
-                                <Binding Path="Value.Player2SourceString" />
+                                <Binding Path="Player2.Name" />
+                                <Binding Path="Player2SourceString" />
                             </PriorityBinding>
                         </DataGridTextColumn.Binding>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Available" Binding="{Binding Value.TimeSinceAvailable, Converter={StaticResource TimeSpanToShortStringConv}}" />
-                    <DataGridTextColumn Header="Station" Binding="{Binding Value.Player1.StationAssignment}" />
-                    <DataGridTextColumn Header="Assigned" Binding="{Binding Value.Player1.TimeSinceAssigned, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                    <DataGridTextColumn Header="Available" Binding="{Binding TimeSinceAvailable, Converter={StaticResource TimeSpanToShortStringConv}}" CellStyle="{StaticResource SelectedStyle}" />
+                    <DataGridTextColumn Header="Station" Binding="{Binding Player1.StationAssignment}" CellStyle="{StaticResource SelectedStyle}"  />
+                    <DataGridTextColumn Header="Assigned" Binding="{Binding Player1.TimeSinceAssigned, Converter={StaticResource TimeSpanToShortStringConv}}" CellStyle="{StaticResource SelectedStyle}" />
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>
@@ -85,11 +89,47 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+
+                <DataGrid Grid.Column="0" Name="StationsDataGrid" Margin="3" IsReadOnly="True" ItemsSource="{Binding Source={StaticResource Stations}}" 
+                          SelectedItem="{Binding SelectedStation}" SelectionMode="Single" AutoGenerateColumns="False" Height="240">
+                    <DataGrid.Resources>
+                        <Style x:Key="SelectedStyle" TargetType="DataGridCell">
+                            <Style.Triggers>
+                                <DataTrigger Value="True">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{StaticResource ObjectEqualityConv}">
+                                            <Binding />
+                                            <Binding ElementName="StationsDataGrid" Path="DataContext.SelectedStation" />
+                                        </MultiBinding>
+                                    </DataTrigger.Binding>
+                                    <Setter Property="Background" Value="{x:Static SystemColors.HighlightBrush}" />
+                                    <Setter Property="BorderBrush" Value="{x:Static SystemColors.HighlightBrush}" />
+                                    <Setter Property="Foreground" Value="White" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" CellStyle="{StaticResource SelectedStyle}" />
+                    </DataGrid.Columns>
+                </DataGrid>
                 
-                <ListBox Grid.Column="0" Margin="3" SelectedItem="{Binding SelectedStation}" ItemsSource="{Binding Stations}" DisplayMemberPath="Name" SelectionMode="Single" />
-                <StackPanel Grid.Column="1" Width="250">
-                    <Button Margin="3" Content="Manage Stations..." IsEnabled="False" />
-                    <Button Margin="3" Content="Assign to Selected Station" Command="{Binding AssignStation}">
+                <DockPanel Name="StationButtonPanel" LastChildFill="False" Grid.Column="1" Width="250">
+                    <GroupBox Margin="3" DockPanel.Dock="Top" Header="Selected Match">
+                        <TextBlock Margin="3" HorizontalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} vs {1}" FallbackValue="No Selection">
+                                    <Binding Path="SelectedMatch.Player1.Name" />
+                                    <Binding Path="SelectedMatch.Player2.Name" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </GroupBox>
+                    <GroupBox Margin="3" DockPanel.Dock="Top" Header="Selected Station">
+                        <TextBlock Margin="3" HorizontalAlignment="Center" Text="{Binding SelectedStation.Name, FallbackValue=No Selection}" />
+                    </GroupBox>
+                    <Button Margin="3" DockPanel.Dock="Top" Content="Import Station File..." Click="ImportStationsButton_Click" />
+                    <Button Margin="3" DockPanel.Dock="Top" Content="Assign Match to Selected Station" Command="{Binding AssignStation}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Style.Triggers>
@@ -103,7 +143,7 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    <Button Margin="3" Content="Call Without Dedicated Station" Command="{Binding AssignNoStation}">
+                    <Button Margin="3" DockPanel.Dock="Top" Content="Call Match to be Played Anywhere" Command="{Binding AssignNoStation}">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Style.Triggers>
@@ -114,8 +154,63 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                </StackPanel>
+                    <Button Margin="3" DockPanel.Dock="Top" Content="Uncall Match/Free Station" Command="{Binding UnassignStation}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedMatch}" Value="{x:Null}">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedMatch.IsMatchInProgress}" Value="False">
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </DockPanel>
             </Grid>
         </GroupBox>
+
+        <UniformGrid Columns="2" Grid.Row="2">
+            <UniformGrid.Style>
+                <Style TargetType="UniformGrid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedMatch}" Value="{x:Null}">
+                            <Setter Property="IsEnabled" Value="False" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </UniformGrid.Style>
+            <GroupBox Margin="3">
+                <GroupBox.Header>
+                    <TextBlock Text="{Binding SelectedMatch.Player1.Name, FallbackValue=Player1}" FontSize="15" />
+                </GroupBox.Header>
+                
+                <StackPanel>
+                    <CheckBox Margin="3" IsChecked="{Binding SelectedMatch.Player1.IsMissing}">
+                        <CheckBox.Content>
+                            <TextBlock Text="{Binding SelectedMatch.Player1.Name, StringFormat={}{0} is Missing, FallbackValue=Player1 is Missing}" />
+                        </CheckBox.Content>
+                    </CheckBox>
+                    <Button Margin="3,27,3,3" Content="Report as Winner" Command="{Binding Player1Wins}" />
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Margin="3">
+                <GroupBox.Header>
+                    <TextBlock Text="{Binding SelectedMatch.Player2.Name, FallbackValue=Player2}" FontSize="15" />
+                </GroupBox.Header>
+
+                <StackPanel>
+                    <CheckBox Margin="3" IsChecked="{Binding SelectedMatch.Player2.IsMissing}">
+                        <CheckBox.Content>
+                            <TextBlock Text="{Binding SelectedMatch.Player2.Name, StringFormat={}{0} is Missing, FallbackValue=Player2 is Missing}" />
+                        </CheckBox.Content>
+                    </CheckBox>
+                    <Button Margin="3,27,3,3" Content="Report as Winner" Command="{Binding Player2Wins}" />
+                </StackPanel>
+            </GroupBox>
+        </UniformGrid>
+        
     </Grid>
 </Window>
