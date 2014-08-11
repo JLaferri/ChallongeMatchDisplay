@@ -94,7 +94,7 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
             {
                 var ofd = new Microsoft.Win32.OpenFileDialog()
                 {
-                    Filter = "Simple CSV Column (*.csv)|*.csv|All files (*.*)|*.*",
+                    Filter = "Text List (*.csv;*.txt)|*.csv;*.txt|All files (*.*)|*.*",
                     RestoreDirectory = true,
                     Title = "Browse for Station File"
                 };

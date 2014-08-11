@@ -128,7 +128,7 @@
                     <GroupBox Margin="3" DockPanel.Dock="Top" Header="Selected Station">
                         <TextBlock Margin="3" HorizontalAlignment="Center" Text="{Binding SelectedStation.Name, FallbackValue=No Selection}" />
                     </GroupBox>
-                    <Button Margin="3" DockPanel.Dock="Top" Content="Import Station File..." Click="ImportStationsButton_Click" />
+                    <Button Margin="3" DockPanel.Dock="Top" Content="Import Station List..." Click="ImportStationsButton_Click" />
                     <Button Margin="3" DockPanel.Dock="Top" Content="Assign Match to Selected Station" Command="{Binding AssignStation}">
                         <Button.Style>
                             <Style TargetType="Button">
