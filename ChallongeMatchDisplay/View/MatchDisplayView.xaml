@@ -6,7 +6,7 @@
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
              mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300"
-             IsHitTestVisible="True">
+             Name="TopLevelControl" IsHitTestVisible="True">
     <UserControl.Resources>
         <CollectionViewSource x:Key="Matches" Source="{Binding DisplayMatches}">
             <CollectionViewSource.SortDescriptions>
@@ -17,6 +17,7 @@
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
         
+        <lview:MultiplyDoubleConverter x:Key="MultiplyDoubleConv" />
         <lview:ProgressToSizeConverter x:Key="ProgressToSizeConv" />
         <lview:TimeSpanToShortStringConverter x:Key="TimeSpanToShortStringConv" />
         <lview:TimeSpanToBrushConverter x:Key="TimeSpanToBrushConv" />
@@ -29,9 +30,21 @@
 
         <Border Grid.Row="0" Margin="12">
             <Grid Grid.IsSharedSizeScope="True">
+                <Grid.Resources>
+                    <Style x:Key="FontBase22" TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=22}" />
+                    </Style>
+                    <Style x:Key="FontBase20" TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=20}" />
+                    </Style>
+                    <Style x:Key="FontBase18" TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=18}" />
+                    </Style>
+                </Grid.Resources>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -50,14 +63,14 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Margin="3" Background="CornflowerBlue">
-                            <TextBlock Margin="6" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Context.Tournament.Name}" />
+                            <TextBlock Margin="6" Style="{StaticResource FontBase22}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Context.Tournament.Name}" />
                         </Border>
 
                         <Button Grid.Column="1" Margin="3" Cursor="Hand" Click="TOButton_Click" FocusVisualStyle="{x:Null}">
                             <Button.Template>
                                 <ControlTemplate>
                                     <Border Background="CornflowerBlue">
-                                        <TextBlock Margin="6" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="TO" />
+                                        <TextBlock Margin="6" Style="{StaticResource FontBase22}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="TO" />
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
@@ -67,7 +80,7 @@
                             <Button.Template>
                                 <ControlTemplate>
                                     <Border Background="CornflowerBlue">
-                                        <TextBlock Margin="6" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Back" />
+                                        <TextBlock Margin="6" Style="{StaticResource FontBase22}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Back" />
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
@@ -75,7 +88,7 @@
                     </Grid>
                     
                     
-                    <Grid Grid.Row="1">
+                    <Grid Name="HeaderRowGrid" Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Round" />
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Code" />
@@ -87,32 +100,32 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Round" />
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Round" />
                         </Border>
 
                         <Border Grid.Column="1" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Code" />
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Code" />
                         </Border>
 
                         <Border Grid.Column="2" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 1" />
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 1" />
                         </Border>
 
                         <Border Grid.Column="3" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 2" />
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Player 2" />
                         </Border>
 
                         <Border Grid.Column="4" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Station" />
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Station" />
                         </Border>
                         
                         <Border Grid.Column="5" Margin="3" Background="DimGray">
-                            <TextBlock Margin="6" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Timer" />
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="Timer" />
                         </Border>
                     </Grid>
                 </Grid>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" FocusVisualStyle="{x:Null}">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
                     <ScrollViewer.Template>
                         <ControlTemplate TargetType="ScrollViewer">
                             <Grid>
@@ -209,11 +222,11 @@
                                         </Grid.ColumnDefinitions>
 
                                         <Border Grid.Column="0" Margin="3" Style="{StaticResource StandardColorToggleBorder}">
-                                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding RoundName}" />
+                                            <TextBlock Margin="6" Style="{StaticResource FontBase18}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding RoundName}" />
                                         </Border>
 
                                         <Border Grid.Column="1" Margin="3" Style="{StaticResource StandardColorToggleBorder}">
-                                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Identifier}" />
+                                            <TextBlock Margin="6" Style="{StaticResource FontBase18}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Identifier}" />
                                         </Border>
 
                                         <Border Grid.Column="2" Margin="3">
@@ -224,19 +237,19 @@
                                                         <DataTrigger Binding="{Binding Player1.IsMissing}" Value="False">
                                                             <Setter Property="Background" Value="SlateBlue" />
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Player1.IsMissing}" Value="True">
-                                                            <Setter Property="Background" Value="#E02020" />
-                                                        </DataTrigger>
                                                         <DataTrigger Binding="{Binding Player1.IsAssignedToStation}" Value="False">
                                                             <Setter Property="Background" Value="Gray" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Player1.IsMissing}" Value="True">
+                                                            <Setter Property="Background" Value="#E02020" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
                                             <Viewbox StretchDirection="DownOnly">
-                                                <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center">
+                                                <TextBlock Margin="6" IsHitTestVisible="False" FontWeight="Bold" HorizontalAlignment="Center">
                                                     <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
+                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource FontBase18}">
                                                             <Setter Property="Foreground" Value="White" />
                                                             <Setter Property="FontWeight" Value="Bold" />
                                                             <Style.Triggers>
@@ -265,19 +278,19 @@
                                                         <DataTrigger Binding="{Binding Player2.IsMissing}" Value="False">
                                                             <Setter Property="Background" Value="SlateBlue" />
                                                         </DataTrigger>
-                                                        <DataTrigger Binding="{Binding Player2.IsMissing}" Value="True">
-                                                            <Setter Property="Background" Value="#E02020" />
-                                                        </DataTrigger>
                                                         <DataTrigger Binding="{Binding Player2.IsAssignedToStation}" Value="False">
                                                             <Setter Property="Background" Value="Gray" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Player2.IsMissing}" Value="True">
+                                                            <Setter Property="Background" Value="#E02020" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
                                             <Viewbox StretchDirection="DownOnly">
-                                                <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center">
+                                                <TextBlock Margin="6" IsHitTestVisible="False" FontWeight="Bold" HorizontalAlignment="Center">
                                                     <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
+                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource FontBase18}">
                                                             <Setter Property="Foreground" Value="White" />
                                                             <Setter Property="FontWeight" Value="Bold" />
                                                             <Style.Triggers>
@@ -299,7 +312,7 @@
                                         </Border>
 
                                         <Border Grid.Column="4" Margin="3" Style="{StaticResource StandardColorToggleBorder}">
-                                            <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Player1.StationAssignment}" />
+                                            <TextBlock Margin="6" Style="{StaticResource FontBase18}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Text="{Binding Player1.StationAssignment}" />
                                         </Border>
 
                                         <Border Grid.Column="5" Margin="3">
@@ -313,17 +326,17 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
-                                            <TextBlock Margin="6" IsHitTestVisible="False" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Text" Value="{Binding TimeSinceAvailable, Converter={StaticResource TimeSpanToShortStringConv}}" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsMatchInProgress}" Value="True">
-                                                            <Setter Property="Text" Value="{Binding Player1.TimeSinceAssigned, Converter={StaticResource TimeSpanToShortStringConv}}" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
+                                            <TextBlock Margin="6" IsHitTestVisible="False" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource FontBase18}">
+                                                        <Setter Property="Text" Value="{Binding TimeSinceAvailable, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsMatchInProgress}" Value="True">
+                                                                <Setter Property="Text" Value="{Binding Player1.TimeSinceAssigned, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
                                             </TextBlock>
                                         </Border>
                                     </Grid>
@@ -336,7 +349,7 @@
                 <ProgressBar Grid.Row="2" Minimum="0" Maximum="100" Value="{Binding Context.Tournament.ProgressMeter, Mode=OneWay}">
                     <ProgressBar.Template>
                         <ControlTemplate>
-                            <Border Margin="3">
+                            <Border Margin="3,6,3,3">
                                 <Border.Background>
                                     <DrawingBrush TileMode="None" Stretch="Fill">
                                         <DrawingBrush.Drawing>
@@ -359,12 +372,39 @@
                                         </DrawingBrush.Drawing>
                                     </DrawingBrush>
                                 </Border.Background>
-                                <TextBlock Margin="6" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" 
+                                <TextBlock Margin="6" Style="{StaticResource FontBase18}" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" 
                                            Text="{Binding Context.Tournament.ProgressMeter, Mode=OneWay, StringFormat={}{0}% Complete}" />
                             </Border>
                         </ControlTemplate>
                     </ProgressBar.Template>
                 </ProgressBar>
+
+                <Slider Grid.Row="3" Margin="3" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio}" Minimum="0.5" Maximum="2" SmallChange="0.1" LargeChange="0.2" 
+                        TickFrequency="0.05" IsSnapToTickEnabled="True" Orientation="Horizontal">
+                    <Slider.Template>
+                        <ControlTemplate TargetType="Slider">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition MaxWidth="0" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition MaxWidth="0" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="3" VerticalAlignment="Center" Height="10" CornerRadius="5" Background="CornflowerBlue" />
+                                <Track Name="PART_Track" Grid.Column="1">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Thumb.Template>
+                                                <ControlTemplate>
+                                                    <Ellipse Margin="3" Height="18" Width="18" Fill="WhiteSmoke" StrokeThickness="2" Stroke="CornflowerBlue" Cursor="Hand" />
+                                                </ControlTemplate>
+                                            </Thumb.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Slider.Template>
+                </Slider>
             </Grid>
         </Border>
 

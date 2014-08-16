@@ -67,6 +67,9 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Graphicloads-Food-Drink-Icecream-2.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="RestSharp, Version=104.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.104.4.0\lib\net4-client\RestSharp.dll</HintPath>
@@ -93,6 +96,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rx-XAML.2.2.5\lib\net40\System.Reactive.Windows.Threading.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -111,18 +115,25 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\Dirtyable.cs" />
+    <Compile Include="Model\GlobalSettings.cs" />
     <Compile Include="Model\ParticipantMiscProperties.cs" />
+    <Compile Include="Model\VisualPersistenceManager.cs" />
     <Compile Include="Model\Station.cs" />
     <Compile Include="ViewModel\DisplayMatch.cs" />
     <Compile Include="ViewModel\OrganizerViewModel.cs" />
+    <Compile Include="View\NewMatchOptionSelectionConverter.cs" />
     <Compile Include="View\MatchDisplayView.xaml.cs">
       <DependentUpon>MatchDisplayView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\MultiplyDoubleConverter.cs" />
     <Compile Include="View\ObjectEqualityConverter.cs" />
     <Compile Include="View\OrganizerWindow.xaml.cs">
       <DependentUpon>OrganizerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\ProgressToSizeConverter.cs" />
+    <Compile Include="View\ReportScoreWindow.xaml.cs">
+      <DependentUpon>ReportScoreWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\TimeSpanToBrushConverter.cs" />
     <Compile Include="View\TimeSpanToShortStringConverter.cs" />
     <Compile Include="View\TournamentSelectionView.xaml.cs">
@@ -165,6 +176,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\ReportScoreWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\TournamentSelectionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -201,6 +216,9 @@
       <Project>{BEC62B0A-47BA-4018-9EF8-A6B159AA11E4}</Project>
       <Name>ChallongeApiWrapper</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Graphicloads-Food-Drink-Icecream-2.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

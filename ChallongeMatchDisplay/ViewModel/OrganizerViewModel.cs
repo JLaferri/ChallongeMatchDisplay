@@ -19,7 +19,7 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
     {
         public MainViewModel Mvm { get; private set; }
 
-        public ObservableCollection<ObservableMatch> OpenMatches { get; private set; }
+        public ObservableCollection<DisplayMatch> OpenMatches { get; private set; }
         public ObservableCollection<Station> OpenStations { get; private set; }
 
         private ObservableMatch _selectedMatch;
@@ -32,114 +32,101 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         private IDisposable matchStateMonitoring;
         private IDisposable stationMonitoring;
 
-        public ICommand AssignStation { get; private set; }
-        public ICommand AssignNoStation { get; private set; }
-        public ICommand UnassignStation { get; private set; }
-
-        public ICommand Player1Wins { get; private set; }
-        public ICommand Player2Wins { get; private set; }
-
         public ICommand ImportStationFile { get; private set; }
+
+        public ICommand AutoAssignPending { get; private set; }
+        public ICommand CallPendingAnywhere { get; private set; }
+        public ICommand ClearAllAssignments { get; private set; }
 
         public OrganizerViewModel(MainViewModel mvm)
         {
             Mvm = mvm;
 
-            OpenMatches = new ObservableCollection<ObservableMatch>();
+            OpenMatches = new ObservableCollection<DisplayMatch>();
             OpenStations = new ObservableCollection<Station>();
 
-            var tournament = mvm.Context.Tournament;
-            var tournamentPropertyChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(h => tournament.PropertyChanged += h, h => tournament.PropertyChanged -= h);
+            var mvmPropertyChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(h => mvm.PropertyChanged += h, h => mvm.PropertyChanged -= h);
 
             //Monitor if matches change (for example on a bracket reset)
-            matchesMonitoring = tournamentPropertyChanged.Where(ep => ep.EventArgs.PropertyName == "Matches")
+            matchesMonitoring = mvmPropertyChanged.Where(ep => ep.EventArgs.PropertyName == "DisplayMatches")
                 .Select(_ => System.Reactive.Unit.Default).StartWith(System.Reactive.Unit.Default)
-                .ObserveOnDispatcher().Subscribe(_ => initialize(mvm.Context.Tournament.Matches));
-
-            AssignStation = Command.Create(() => true, () =>
-            {
-                SelectedMatch.AssignPlayersToStation(SelectedStation.Name);
-
-                //Move selection to the next unassigned match for easier batch match assignment
-                SelectedMatch = OpenMatches.OrderBy(m => m.RoundOrder).ThenBy(m => m.IsWinners).ThenBy(m => m.Identifier)
-                    .SkipWhile(m => m != SelectedMatch).FirstOrDefault(m => !m.IsMatchInProgress);
-            });
-
-            AssignNoStation = Command.Create(() => true, () =>
-            {
-                SelectedMatch.AssignPlayersToStation("Any");
-
-                //Move selection to the next unassigned match for easier batch match assignment
-                SelectedMatch = OpenMatches.OrderBy(m => m.RoundOrder).ThenBy(m => m.IsWinners).ThenBy(m => m.Identifier)
-                    .SkipWhile(m => m != SelectedMatch).FirstOrDefault(m => !m.IsMatchInProgress);
-            });
-
-            UnassignStation = Command.Create(() => true, () =>
-            {
-                if (SelectedMatch.Player1 != null) SelectedMatch.Player1.ClearStationAssignment();
-                if (SelectedMatch.Player2 != null) SelectedMatch.Player2.ClearStationAssignment();
-            });
-
-            Player1Wins = Command.Create(() => true, () =>
-            {
-                SelectedMatch.ReportPlayer1Victory(SetScore.Create(1, 0));
-            });
-
-            Player2Wins = Command.Create(() => true, () =>
-            {
-                SelectedMatch.ReportPlayer2Victory(SetScore.Create(0, 1));
-            });
+                .ObserveOnDispatcher().Subscribe(_ => initialize(mvm.DisplayMatches.Where(dm => dm.MatchDisplayType == DisplayMatch.DisplayType.Assigned).ToArray()));
 
             ImportStationFile = Command.Create<System.Windows.Window>(_ => true, window =>
             {
-                var ofd = new Microsoft.Win32.OpenFileDialog()
+                try
                 {
-                    Filter = "Text List (*.csv;*.txt)|*.csv;*.txt|All files (*.*)|*.*",
-                    RestoreDirectory = true,
-                    Title = "Browse for Station File"
-                };
+                    var ofd = new Microsoft.Win32.OpenFileDialog()
+                    {
+                        Filter = "Text List (*.csv;*.txt)|*.csv;*.txt|All files (*.*)|*.*",
+                        RestoreDirectory = true,
+                        Title = "Browse for Station File"
+                    };
 
-                var result = ofd.ShowDialog(window);
-                if (result.HasValue && result.Value)
-                {
-                    var path = ofd.FileName;
+                    var result = ofd.ShowDialog(window);
+                    if (result.HasValue && result.Value)
+                    {
+                        var path = ofd.FileName;
 
-                    initializeStations(path);
+                        initializeStations(path);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(window, "Error encountered trying to import station list: " + ex.NewLineDelimitedMessages(), 
+                        "Error Importing", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+            });
+
+            AutoAssignPending = Command.Create(() => true, () =>
+            {
+                Stations.Instance.AssignOpenMatchesToStations(OpenMatches.Select(dm => dm.Match).ToArray());
+            });
+
+            CallPendingAnywhere = Command.Create(() => true, () =>
+            {
+                var stationsWithoutAssignments = OpenMatches.Where(m => !m.Match.IsMatchInProgress).ToArray();
+
+                foreach (var s in stationsWithoutAssignments) s.Match.AssignPlayersToStation("Any");
+            });
+
+            ClearAllAssignments = Command.Create(() => true, () =>
+            {
+                var stationsWithAssignments = OpenMatches.Where(m => m.Match.IsMatchInProgress).ToArray();
+
+                foreach (var s in stationsWithAssignments) s.Match.ClearStationAssignment();
             });
         }
 
-        private void initialize(Dictionary<int, ObservableMatch> matches)
+        private void initialize(DisplayMatch[] matches)
         {
             OpenMatches.Clear();
 
             if (matchStateMonitoring != null) matchStateMonitoring.Dispose();
 
-            var subscriptions = matches.Select(kvp => kvp.Value).Select(m =>
+            var subscriptions = matches.Select(dm =>
             {
+                var m = dm.Match;
                 var matchPropChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(h => m.PropertyChanged += h, h => m.PropertyChanged -= h);
 
                 return matchPropChanged.Where(ep => ep.EventArgs.PropertyName == "State")
                     .Select(_ => System.Reactive.Unit.Default).StartWith(System.Reactive.Unit.Default)
                     .ObserveOnDispatcher().Subscribe(_ =>
                     {
-                        if (m.State == "open") OpenMatches.Add(m);
-                        else OpenMatches.Remove(m);
+                        if (m.State == "open") OpenMatches.Add(dm);
+                        else OpenMatches.Remove(dm);
                     });
             }).ToArray();
 
             matchStateMonitoring = new CompositeDisposable(subscriptions);
         }
 
-        private void initializeStations(string[] stationNames)
+        private void initializeStations(Station[] uniqueStations)
         {
             //Load stations
             OpenStations.Clear();
 
             if (stationMonitoring != null) stationMonitoring.Dispose();
-
-            //Only allow distinct station names and dont allow any station called "Any" as that is a reserved name
-            var uniqueStations = stationNames.Distinct().Where(name => name.Trim().ToLower() != "any").Select((name, i) => new Station(name, i)).ToArray();
 
             //Start by adding all stations as open stations to the collection
             foreach (var s in uniqueStations) OpenStations.Add(s);
@@ -163,7 +150,7 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
             }).ToArray();
 
             //Get the names of all currently "in use" stations and mark them as in use, removing them from the observable collection via the event listener that was just hooked up
-            var inUseStations = OpenMatches.Select(m => m.StationAssignment).Where(sn => sn != null);
+            var inUseStations = OpenMatches.Select(m => m.Match.StationAssignment).Where(sn => sn != null);
             foreach (var sn in inUseStations)
             {
                 stations.AttemptClaimStation(sn);
@@ -175,10 +162,32 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         private void initializeStations(string filePath)
         {
             //Get station names from file
-            var stationNames = File.ReadAllLines(filePath);
+            var lines = File.ReadAllLines(filePath);
+
+            //Only allow distinct station names and dont allow any station called "Any" as that is a reserved name
+            var uniqueStations = lines.Select(line =>
+            {
+                var commaSeparated = line.Split(',');
+                
+                var name = commaSeparated.Length == 0 ? string.Empty : commaSeparated[0];
+                
+                int? priority = null;
+                int priorityTemp;
+                if (commaSeparated.Length > 1 && int.TryParse(commaSeparated[1], out priorityTemp))
+                {
+                    priority = priorityTemp;
+                }
+
+                return new { Name = name, Priority = priority };
+            }).GroupBy(a => a.Name).Select(g => g.First()).Where(a => 
+            {
+                var trimmedName = a.Name.Trim().ToLower();
+
+                return trimmedName != "any" && !string.IsNullOrWhiteSpace(trimmedName);
+            }).Select((a, i) => new Station(a.Name, i, a.Priority)).ToArray();
 
             //Initialize stations
-            initializeStations(stationNames);
+            initializeStations(uniqueStations);
         }
 
         public void Dispose()

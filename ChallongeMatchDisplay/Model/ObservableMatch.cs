@@ -149,6 +149,13 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             }
             else Round = match.Round;
 
+            //Check if station assignment data checks out. If not, clear the assignment
+            var player1Station = Player1 != null ? Player1.StationAssignment : default(string);
+            var player2Station = Player2 != null ? Player2.StationAssignment : default(string);
+
+            //If stations don't match, clear. Don't check completed matches because those will frequently have mismatching stations
+            if (State != "complete" && player1Station != player2Station) ClearStationAssignment();
+
             //Listen for when properties changed to that changed events for the convenience properties can also be fired.
             this.PropertyChanged += (sender, e) =>
             {
@@ -177,6 +184,24 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                         //Clear station assignments if match state changes
                         if (Player1 != null) Player1.ClearStationAssignment();
                         if (Player2 != null) Player2.ClearStationAssignment();
+
+                        //If match state has changed to open, execute selected new match option
+                        if (State == "open")
+                        {
+                            var option = GlobalSettings.Instance.SelectedNewMatchAction;
+
+                            switch (option)
+                            {
+                                case NewMatchAction.AutoAssign:
+                                    //TODO: Consider using lock block here to prevent potential multithreaded assignment to the same station
+                                    var highestPriorityStation = Stations.Instance.GetHighestPriorityOpenStation();
+                                    if (highestPriorityStation != null) AssignPlayersToStation(highestPriorityStation.Name);
+                                    break;
+                                case NewMatchAction.Anywhere:
+                                    AssignPlayersToStation("Any");
+                                    break;
+                            }
+                        }
                         break;
                 }
             };
@@ -222,6 +247,12 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 Player1.AssignStation(stationName);
                 Player2.AssignStation(stationName);
             }
+        }
+
+        public void ClearStationAssignment()
+        {
+            if (Player1 != null) Player1.ClearStationAssignment();
+            if (Player2 != null) Player2.ClearStationAssignment();
         }
 
         public void ReportPlayer1Victory(params SetScore[] setCounts)

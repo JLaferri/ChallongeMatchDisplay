@@ -12,17 +12,57 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Fizzi.Applications.ChallongeVisualization.ViewModel;
+using System.ComponentModel;
+using Fizzi.Applications.ChallongeVisualization.Common;
+using System.Reactive.Linq;
 
 namespace Fizzi.Applications.ChallongeVisualization.View
 {
     /// <summary>
     /// Interaction logic for MatchDisplayView.xaml
     /// </summary>
-    public partial class MatchDisplayView : UserControl
+    public partial class MatchDisplayView : UserControl, INotifyPropertyChanged
     {
+        private double _textSizeRatio;
+        public double TextSizeRatio { get { return _textSizeRatio; } set { this.RaiseAndSetIfChanged("TextSizeRatio", ref _textSizeRatio, value, PropertyChanged); } }
+
         public MatchDisplayView()
         {
             InitializeComponent();
+
+            var vpm = Model.VisualPersistenceManager.Instance;
+            TextSizeRatio = vpm.TextSizeRatio;
+
+            this.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == "TextSizeRatio")
+                {
+                    foreach (var cd in HeaderRowGrid.ColumnDefinitions)
+                    {
+                        if (cd.Width == System.Windows.GridLength.Auto)
+                        {
+                            //Columns that are set to auto-width are forced to shrink and recompute their width
+                            //This was done because when the text shrinks, the columns were not being properly resized
+                            cd.Width = new GridLength(0);
+                            cd.Width = GridLength.Auto;
+                        }
+                    }
+                }
+            };
+
+            var propChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(h => this.PropertyChanged += h, h => this.PropertyChanged -= h);
+
+            //Monitor for visual display changes and write to persistent storage in a throttled manner to limit the amount of writes done to the hard drive
+            propChanged.Where(ep =>
+            {
+                var propName = ep.EventArgs.PropertyName;
+                return propName == "TextSizeRatio";
+            }).Throttle(TimeSpan.FromSeconds(5)).Subscribe(_ =>
+            {
+                vpm.TextSizeRatio = TextSizeRatio;
+
+                vpm.Save();
+            });
         }
 
         private void PlayerBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -91,5 +131,7 @@ namespace Fizzi.Applications.ChallongeVisualization.View
                 organizerWindow.Close();
             }
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

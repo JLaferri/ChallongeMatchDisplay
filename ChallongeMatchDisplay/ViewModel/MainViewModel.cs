@@ -13,6 +13,7 @@ using System.Reactive.Linq;
 using System.IO;
 using RestSharp;
 using System.Collections.ObjectModel;
+using Fizzi.Applications.ChallongeVisualization.Properties;
 
 namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 {
