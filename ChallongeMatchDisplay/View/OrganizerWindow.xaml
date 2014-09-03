@@ -56,7 +56,7 @@
                 <MenuItem Header="New Match Action">
                     <MenuItem IsCheckable="True" Header="None" IsChecked="{Binding Source={x:Static lm:GlobalSettings.Instance}, Path=SelectedNewMatchAction, 
                         Converter={StaticResource NewMatchOptionSelectionConv}, ConverterParameter=0}" />
-                    <MenuItem IsCheckable="True" Header="Auto-Assign" IsChecked="{Binding Source={x:Static lm:GlobalSettings.Instance}, Path=SelectedNewMatchAction, 
+                    <MenuItem IsCheckable="True" Header="Assign" IsChecked="{Binding Source={x:Static lm:GlobalSettings.Instance}, Path=SelectedNewMatchAction, 
                         Converter={StaticResource NewMatchOptionSelectionConv}, ConverterParameter=1}" />
                     <MenuItem IsCheckable="True" Header="Call Anywhere" IsChecked="{Binding Source={x:Static lm:GlobalSettings.Instance}, Path=SelectedNewMatchAction, 
                         Converter={StaticResource NewMatchOptionSelectionConv}, ConverterParameter=2}" />
@@ -98,7 +98,7 @@
                     </DataGrid.Resources>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name}" CellStyle="{StaticResource SelectedStyle}" />
-                        <DataGridTextColumn Header="Priority" Width="Auto" Binding="{Binding Priority, TargetNullValue=None}" CellStyle="{StaticResource SelectedStyle}" />
+                        <DataGridTextColumn Header="Auto Type" Width="Auto" Binding="{Binding Type}" CellStyle="{StaticResource SelectedStyle}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

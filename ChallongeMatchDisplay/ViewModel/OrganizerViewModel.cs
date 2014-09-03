@@ -170,21 +170,26 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                 var commaSeparated = line.Split(',');
                 
                 var name = commaSeparated.Length == 0 ? string.Empty : commaSeparated[0];
-                
-                int? priority = null;
-                int priorityTemp;
-                if (commaSeparated.Length > 1 && int.TryParse(commaSeparated[1], out priorityTemp))
+
+                StationType type = StationType.Standard;
+                if (commaSeparated.Length > 1)
                 {
-                    priority = priorityTemp;
+                    var stationText = commaSeparated[1].Trim().ToLower();
+
+                    if (stationText == "stream") type = StationType.Stream;
+                    else if (stationText == "recording") type = StationType.Recording;
+                    else if (stationText == "premium") type = StationType.Premium;
+                    else if (stationText == "backup") type = StationType.Backup;
+                    else if (stationText == "noassign") type = StationType.NoAssign;
                 }
 
-                return new { Name = name, Priority = priority };
+                return new { Name = name, Type = type };
             }).GroupBy(a => a.Name).Select(g => g.First()).Where(a => 
             {
                 var trimmedName = a.Name.Trim().ToLower();
 
                 return trimmedName != "any" && !string.IsNullOrWhiteSpace(trimmedName);
-            }).Select((a, i) => new Station(a.Name, i, a.Priority)).ToArray();
+            }).Select((a, i) => new Station(a.Name, i, a.Type)).ToArray();
 
             //Initialize stations
             initializeStations(uniqueStations);

@@ -194,7 +194,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                             {
                                 case NewMatchAction.AutoAssign:
                                     //TODO: Consider using lock block here to prevent potential multithreaded assignment to the same station
-                                    var highestPriorityStation = Stations.Instance.GetHighestPriorityOpenStation();
+                                    var highestPriorityStation = Stations.Instance.GetBestNormalStation();
                                     if (highestPriorityStation != null) AssignPlayersToStation(highestPriorityStation.Name);
                                     break;
                                 case NewMatchAction.Anywhere:
