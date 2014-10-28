@@ -17,7 +17,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         #region Externalize Source Properties
         public int Id { get { return source.Id; } }
-        public string Name { get { return source.Name; } }
+        public string Name { get { return source.NameOrUsername; } }
 
         public int Seed { get { return source.Seed; } }
         public string Misc { get { return source.Misc; } }
