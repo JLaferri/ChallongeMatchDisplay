@@ -35,8 +35,8 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         public TournamentContext OwningContext { get; private set; }
 
         #region Convenience Properties
-        public ObservableParticipant Player1 { get { return Player1Id.HasValue ? OwningContext.Tournament.Participants[Player1Id.Value] : null; } }
-        public ObservableParticipant Player2 { get { return Player2Id.HasValue ? OwningContext.Tournament.Participants[Player2Id.Value] : null; } }
+        public ObservableParticipant Player1 { get { return Player1Id.HasValue && OwningContext.Tournament.Participants.ContainsKey(Player1Id.Value) ? OwningContext.Tournament.Participants[Player1Id.Value] : null; } }
+        public ObservableParticipant Player2 { get { return Player2Id.HasValue && OwningContext.Tournament.Participants.ContainsKey(Player2Id.Value) ? OwningContext.Tournament.Participants[Player2Id.Value] : null; } }
 
         public ObservableMatch Player1PreviousMatch { get { return Player1PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player1PrereqMatchId.Value] : null; } }
         public ObservableMatch Player2PreviousMatch { get { return Player2PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player2PrereqMatchId.Value] : null; } }
