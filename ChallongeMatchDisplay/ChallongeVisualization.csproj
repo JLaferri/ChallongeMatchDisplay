@@ -109,6 +109,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Common\AsyncCommand.cs" />
     <Compile Include="Model\Dirtyable.cs" />
     <Compile Include="Model\GlobalSettings.cs" />
     <Compile Include="Model\ParticipantMiscProperties.cs" />

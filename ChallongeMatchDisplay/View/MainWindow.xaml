@@ -11,8 +11,68 @@
     <Window.Title>
         <Binding Path="Version" StringFormat="Challonge Front-End Beta ({0})" Mode="OneTime" />
     </Window.Title>
+    <Window.Style>
+        <Style TargetType="Window">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                    <Setter Property="Cursor" Value="Wait" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
     <Grid Name="MainGrid">
-        <ContentControl>
+        <!-- Logic for disabling items when organizer is busy with a task -->
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        
+        <!-- Version outdated display notification -->
+        <Border Margin="12" BorderThickness="1" BorderBrush="Black"  Background="#FFD750">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsVersionOutdatedVisible}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Margin="6" FontSize="18" TextWrapping="Wrap">
+                    This application version is outdated. The newest version is <Run Text="{Binding MostRecentVersion}" />.  
+                    <Hyperlink NavigateUri="http://smashboards.com/threads/challonge-match-display-application-helping-tournaments-run-faster.358186/"
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        Click here
+                    </Hyperlink> to download.
+                </TextBlock>
+
+                <TextBlock Grid.Row="1" TextAlignment="Right"  Margin="6" FontSize="18">
+                    <Hyperlink Command="{Binding IgnoreVersionNotification}">
+                        Ignore
+                    </Hyperlink>
+                </TextBlock>
+            </Grid>
+        </Border>
+        
+        <ContentControl Grid.Row="1">
             <ContentControl.Style>
                 <Style TargetType="ContentControl">
                     <Style.Triggers>

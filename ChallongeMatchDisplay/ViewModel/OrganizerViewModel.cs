@@ -19,6 +19,12 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
     {
         public MainViewModel Mvm { get; private set; }
 
+        private bool _isBusy;
+        public bool IsBusy { get { return _isBusy; } set { this.RaiseAndSetIfChanged("IsBusy", ref _isBusy, value, PropertyChanged); } }
+
+        private string _errorMessage;
+        public string ErrorMessage { get { return _errorMessage; } set { this.RaiseAndSetIfChanged("ErrorMessage", ref _errorMessage, value, PropertyChanged); } }
+
         public ObservableCollection<DisplayMatch> OpenMatches { get; private set; }
         public ObservableCollection<Station> OpenStations { get; private set; }
 
@@ -38,7 +44,7 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         public ICommand CallPendingAnywhere { get; private set; }
         public ICommand ClearAllAssignments { get; private set; }
 
-        public OrganizerViewModel(MainViewModel mvm)
+        public OrganizerViewModel(MainViewModel mvm, System.Threading.SynchronizationContext dispatcher)
         {
             Mvm = mvm;
 
@@ -49,8 +55,8 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 
             //Monitor if matches change (for example on a bracket reset)
             matchesMonitoring = mvmPropertyChanged.Where(ep => ep.EventArgs.PropertyName == "DisplayMatches")
-                .Select(_ => System.Reactive.Unit.Default).StartWith(System.Reactive.Unit.Default)
-                .ObserveOnDispatcher().Subscribe(_ => initialize(mvm.DisplayMatches.Where(dm => dm.MatchDisplayType == DisplayMatch.DisplayType.Assigned).ToArray()));
+                .Select(_ => System.Reactive.Unit.Default).StartWith(System.Reactive.Unit.Default).Where(_ => mvm.DisplayMatches != null)
+                .ObserveOn(dispatcher).Subscribe(_ => initialize(mvm.DisplayMatches.Where(dm => dm.MatchDisplayType == DisplayMatch.DisplayType.Assigned).ToArray()));
 
             ImportStationFile = Command.Create<System.Windows.Window>(_ => true, window =>
             {
@@ -78,46 +84,84 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                 }
             });
 
-            AutoAssignPending = Command.Create(() => true, () =>
+            //Modify ViewModel state when an action is initiated
+            Action startAction = () =>
+            {
+                ErrorMessage = null;
+                IsBusy = true;
+            };
+
+            //Modify ViewModel state when an action is completed
+            Action endAction = () =>
+            {
+                IsBusy = false;
+            };
+
+            //Modify ViewModel state when an action comes back with an exception
+            Action<Exception> errorHandler = ex =>
+            {
+                if (ex.InnerException is ChallongeApiException)
+                {
+                    var cApiEx = (ChallongeApiException)ex.InnerException;
+
+                    if (cApiEx.Errors != null) ErrorMessage = cApiEx.Errors.Aggregate((one, two) => one + "\r\n" + two);
+                    else ErrorMessage = string.Format("Error with ResponseStatus \"{0}\" and StatusCode \"{1}\". {2}", cApiEx.RestResponse.ResponseStatus,
+                        cApiEx.RestResponse.StatusCode, cApiEx.RestResponse.ErrorMessage);
+                }
+                else
+                {
+                    ErrorMessage = ex.NewLineDelimitedMessages();
+                }
+
+                IsBusy = false;
+            };
+
+            AutoAssignPending = Command.CreateAsync(() => true, () =>
             {
                 Stations.Instance.AssignOpenMatchesToStations(OpenMatches.Select(dm => dm.Match).ToArray());
-            });
+            }, startAction, endAction, errorHandler);
 
-            CallPendingAnywhere = Command.Create(() => true, () =>
+            CallPendingAnywhere = Command.CreateAsync(() => true, () =>
             {
                 var stationsWithoutAssignments = OpenMatches.Where(m => !m.Match.IsMatchInProgress).ToArray();
 
                 foreach (var s in stationsWithoutAssignments) s.Match.AssignPlayersToStation("Any");
-            });
+            }, startAction, endAction, errorHandler);
 
-            ClearAllAssignments = Command.Create(() => true, () =>
+            ClearAllAssignments = Command.CreateAsync(() => true, () =>
             {
                 var stationsWithAssignments = OpenMatches.Where(m => m.Match.IsMatchInProgress).ToArray();
 
                 foreach (var s in stationsWithAssignments) s.Match.ClearStationAssignment();
-            });
+            }, startAction, endAction, errorHandler);
         }
 
         private void initialize(DisplayMatch[] matches)
         {
+            //Clear the observable collection that is used to display matches on screen
             OpenMatches.Clear();
 
+            //Dispose of previous match state monitoring
             if (matchStateMonitoring != null) matchStateMonitoring.Dispose();
 
+            //Subscribe to new matches state change events and get back the dispose objects to unsubscribe if matches change
             var subscriptions = matches.Select(dm =>
             {
                 var m = dm.Match;
                 var matchPropChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(h => m.PropertyChanged += h, h => m.PropertyChanged -= h);
 
+                //Monitor state changes to add and remove matches from being visible
                 return matchPropChanged.Where(ep => ep.EventArgs.PropertyName == "State")
                     .Select(_ => System.Reactive.Unit.Default).StartWith(System.Reactive.Unit.Default)
                     .ObserveOnDispatcher().Subscribe(_ =>
                     {
+                        //If match just opened, add it to visible matches, if match changed to a different state, hide it
                         if (m.State == "open") OpenMatches.Add(dm);
                         else OpenMatches.Remove(dm);
                     });
             }).ToArray();
 
+            //Return object that can be used to unsubscribe from all match state change notifications
             matchStateMonitoring = new CompositeDisposable(subscriptions);
         }
 

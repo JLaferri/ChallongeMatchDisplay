@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Fizzi.Libraries.ChallongeApiWrapper;
+using Fizzi.Applications.ChallongeVisualization.ViewModel;
 
 namespace Fizzi.Applications.ChallongeVisualization.View
 {
@@ -23,6 +24,19 @@ namespace Fizzi.Applications.ChallongeVisualization.View
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.Uri.ToString());
+        }
+
+        private void Expander_Collapsed(object sender, RoutedEventArgs e)
+        {
+            var mvm = (MainViewModel)this.DataContext;
+            mvm.IgnoreVersionNotification.Execute(null);
+
+            ((Expander)sender).IsExpanded = true;
         }
     }
 }

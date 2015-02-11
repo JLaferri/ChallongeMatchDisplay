@@ -14,12 +14,16 @@ using System.IO;
 using RestSharp;
 using System.Collections.ObjectModel;
 using Fizzi.Applications.ChallongeVisualization.Properties;
+using System.Xml.Linq;
 
 namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 {
     class MainViewModel : INotifyPropertyChanged
     {
         public string Version { get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); } }
+
+        private string _mostRecentVersion;
+        public string MostRecentVersion { get { return _mostRecentVersion; } set { this.RaiseAndSetIfChanged("MostRecentVersion", ref _mostRecentVersion, value, PropertyChanged); } }
 
         private ScreenType _currentScreen;
         public ScreenType CurrentScreen { get { return _currentScreen; } set { this.RaiseAndSetIfChanged("CurrentScreen", ref _currentScreen, value, PropertyChanged); } }
@@ -44,17 +48,22 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 
         private PropertyChangedEventHandler matchesChangedHandler;
 
-        private bool _isError;
-        public bool IsError { get { return _isError; } set { this.RaiseAndSetIfChanged("IsError", ref _isError, value, PropertyChanged); } }
-
         private bool _newVersionAvailable;
         public bool NewVersionAvailable { get { return _newVersionAvailable; } set { this.RaiseAndSetIfChanged("NewVersionAvailable", ref _newVersionAvailable, value, PropertyChanged); } }
+
+        private bool _isBusy;
+        public bool IsBusy { get { return _isBusy; } set { this.RaiseAndSetIfChanged("IsBusy", ref _isBusy, value, PropertyChanged); } }
+
+        private bool _isVersionOutdatedVisible;
+        public bool IsVersionOutdatedVisible { get { return _isVersionOutdatedVisible; } set { this.RaiseAndSetIfChanged("IsVersionOutdatedVisible", ref _isVersionOutdatedVisible, value, PropertyChanged); } }
 
         private string _errorMessage;
         public string ErrorMessage { get { return _errorMessage; } set { this.RaiseAndSetIfChanged("ErrorMessage", ref _errorMessage, value, PropertyChanged); } }
 
         public ICommand NextCommand { get; private set; }
         public ICommand Back { get; private set; }
+
+        public ICommand IgnoreVersionNotification { get; private set; }
 
         public string ThreadUrl { get { return "http://smashboards.com/threads/challonge-match-display-application-helping-tournaments-run-faster.358186/"; } }
 
@@ -85,7 +94,42 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
             //    catch { /* ignore */ }
             //});
 
-            NextCommand = Command.Create(() => true, () =>
+            //Modify ViewModel state when an action is initiated
+            Action startAction = () =>
+            {
+                ErrorMessage = null;
+                IsBusy = true;
+            };
+
+            //Modify ViewModel state when an action is completed
+            Action endAction = () =>
+            {
+                IsBusy = false;
+            };
+
+            //Modify ViewModel state when an action comes back with an exception
+            Action<Exception> errorHandler = ex =>
+            {
+                if (ex.InnerException is ChallongeApiException)
+                {
+                    var cApiEx = (ChallongeApiException)ex.InnerException;
+
+                    if (cApiEx.Errors != null) ErrorMessage = cApiEx.Errors.Aggregate((one, two) => one + "\r\n" + two);
+                    else ErrorMessage = string.Format("Error with ResponseStatus \"{0}\" and StatusCode \"{1}\". {2}", cApiEx.RestResponse.ResponseStatus,
+                        cApiEx.RestResponse.StatusCode, cApiEx.RestResponse.ErrorMessage);
+                }
+                else
+                {
+                    ErrorMessage = ex.NewLineDelimitedMessages();
+                }
+
+                IsBusy = false;
+            };
+
+            var dispatcher = System.Threading.SynchronizationContext.Current;
+
+            //Handle next button press
+            NextCommand = Command.CreateAsync(() => true, () =>
             {
                 switch (CurrentScreen)
                 {
@@ -93,30 +137,52 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                         var subdomain = string.IsNullOrWhiteSpace(Subdomain) ? null : Subdomain;
                         Portal = new ChallongePortal(ApiKey, subdomain);
 
+                        //Load list of tournaments that match apikey/subdomain
+                        TournamentCollection = Portal.GetTournaments().OrderByDescending(t => t.CreatedAt).ToArray();
+
                         try
                         {
-                            TournamentCollection = Portal.GetTournaments().OrderByDescending(t => t.CreatedAt).ToArray();
-                        }
-                        catch (ChallongeApiException ex)
-                        {
-                            if (ex.Errors != null) ErrorMessage = ex.Errors.Aggregate((one, two) => one + "\r\n" + two);
-                            else ErrorMessage = string.Format("Error with ResponseStatus \"{0}\" and StatusCode \"{1}\".", ex.RestResponse.ResponseStatus,
-                                ex.RestResponse.StatusCode);
+                            //This is a silly method for checking whether a new application version exists without me having my own website.
+                            //I manage the most recent version number in the description of a tournament hosted on challonge. This code fetches that number
+                            var versionCheckPortal = new ChallongePortal(ApiKey, "fizzitestorg");
+                            MostRecentVersion = versionCheckPortal.GetTournaments().Where(t => t.Name == "CMDVersionTest").Select(t => 
+                            {
+                                //Modifying the description seems to put some html formatting into the result. This filters the description for
+                                //just the version number by itself
+                                var versionResult = string.Concat(t.Description.Where(c => char.IsDigit(c) || c == '.'));
+                                return versionResult;
+                            }).First();
 
-                            IsError = true;
-                            return;
+                            //Check both version numbers to determine if current version is older than recent version
+                            var versionCompareResult = Version.Split('.').Zip(MostRecentVersion.Split('.'), (v, mrv) =>
+                            {
+                                return int.Parse(v).CompareTo(int.Parse(mrv));
+                            }).FirstOrDefault(i => i != 0);
+
+                            //If app version is older than most recent version, show message
+                            IsVersionOutdatedVisible = versionCompareResult < 0;
                         }
+                        catch (Exception)
+                        {
+                            //If version check fails simply ignore the problem and move on
+                            System.Diagnostics.Debug.WriteLine("Version check failed.");
+                        }
+
                         break;
                     case ScreenType.TournamentSelection:
                         if (Context != null) Context.Dispose();
                         if (matchesChangedHandler != null) Context.Tournament.PropertyChanged -= matchesChangedHandler;
 
+                        //Create tournament context from selected tournament
                         Context = new TournamentContext(Portal, SelectedTournament.Id);
                         Context.StartSynchronization(TimeSpan.FromMilliseconds(500), 6);
 
+                        //Create TO View Model
+                        OrgViewModel = new OrganizerViewModel(this, dispatcher);
+
                         //Load up matches into display matches. This is done to allow ordering of assigned matches over unassigned matches without having to refresh the view
-                        DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Assigned))
-                            .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
+                        DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Assigned))
+                            .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
 
                         //This handler is used to keep matches display matches in sync with tournament context matches. If the matches in the context change, re-generate the display matches
                         matchesChangedHandler = new PropertyChangedEventHandler((sender, e) =>
@@ -126,26 +192,20 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                                 if (Context.Tournament.Matches == null) DisplayMatches = null;
                                 else
                                 {
-                                    DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Assigned))
-                                        .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
+                                    DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Assigned))
+                                        .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
                                 }
                             }
                         });
                         Context.Tournament.PropertyChanged += matchesChangedHandler;
 
-                        //Create TO View Model
-                        OrgViewModel = new OrganizerViewModel(this);
                         break;
                 }
 
-                //Clear any errors that may have existed
-                IsError = false;
-                ErrorMessage = null;
-
                 CurrentScreen = (ScreenType)((int)CurrentScreen + 1);
-            });
+            }, startAction, endAction, errorHandler);
 
-            Back = Command.Create(() => true, () =>
+            Back = Command.CreateAsync(() => true, () =>
             {
                 switch (CurrentScreen)
                 {
@@ -161,9 +221,9 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                         break;
                 }
                 CurrentScreen = (ScreenType)((int)CurrentScreen - 1);
-            });
+            }, startAction, endAction, errorHandler);
 
-            
+            IgnoreVersionNotification = Command.Create(() => true, () => IsVersionOutdatedVisible = false);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

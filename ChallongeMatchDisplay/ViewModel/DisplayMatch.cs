@@ -28,31 +28,63 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         public ICommand CallMatch { get; private set; }
         public ICommand UncallMatch { get; private set; }
 
-        public DisplayMatch(ObservableMatch match, DisplayType displayType)
+        public DisplayMatch(OrganizerViewModel ovm, ObservableMatch match, DisplayType displayType)
         {
             Match = match;
             MatchDisplayType = displayType;
 
-            Player1Wins = Command.Create(() => true, () => Match.ReportPlayer1Victory(SetScore.Create(1, 0)));
-            Player2Wins = Command.Create(() => true, () => Match.ReportPlayer2Victory(SetScore.Create(0, 1)));
+            //Modify ViewModel state when an action is initiated
+            Action startAction = () =>
+            {
+                ovm.ErrorMessage = null;
+                ovm.IsBusy = true;
+            };
 
-            Player1WinsScored = Command.Create<SetScore[]>(_ => true, scores => Match.ReportPlayer1Victory(scores));
-            Player2WinsScored = Command.Create<SetScore[]>(_ => true, scores => Match.ReportPlayer2Victory(scores));
+            //Modify ViewModel state when an action is completed
+            Action endAction = () =>
+            {
+                ovm.IsBusy = false;
+            };
 
-            Player1ToggleMissing = Command.Create(() => true, () => Match.Player1.IsMissing = !Match.Player1.IsMissing);
-            Player2ToggleMissing = Command.Create(() => true, () => Match.Player2.IsMissing = !Match.Player2.IsMissing);
+            //Modify ViewModel state when an action comes back with an exception
+            Action<Exception> errorHandler = ex =>
+            {
+                if (ex.InnerException is ChallongeApiException)
+                {
+                    var cApiEx = (ChallongeApiException)ex.InnerException;
 
-            AssignStation = Command.Create<Station>(_ => true, s => Match.AssignPlayersToStation(s.Name));
-            CallMatchAnywhere = Command.Create(() => true, () => Match.AssignPlayersToStation("Any"));
-            CallMatch = Command.Create<Station>(_ => true, s =>
+                    if (cApiEx.Errors != null) ovm.ErrorMessage = cApiEx.Errors.Aggregate((one, two) => one + "\r\n" + two);
+                    else ovm.ErrorMessage = string.Format("Error with ResponseStatus \"{0}\" and StatusCode \"{1}\". {2}", cApiEx.RestResponse.ResponseStatus,
+                        cApiEx.RestResponse.StatusCode, cApiEx.RestResponse.ErrorMessage);
+                }
+                else
+                {
+                    ovm.ErrorMessage = ex.NewLineDelimitedMessages();
+                }
+
+                ovm.IsBusy = false;
+            };
+
+            Player1Wins = Command.CreateAsync(() => true, () => Match.ReportPlayer1Victory(SetScore.Create(1, 0)), startAction, endAction, errorHandler);
+            Player2Wins = Command.CreateAsync(() => true, () => Match.ReportPlayer2Victory(SetScore.Create(0, 1)), startAction, endAction, errorHandler);
+
+            Player1WinsScored = Command.CreateAsync<SetScore[]>(_ => true, scores => Match.ReportPlayer1Victory(scores), _ => startAction(), _ => endAction(), (_, ex) => errorHandler(ex));
+            Player2WinsScored = Command.CreateAsync<SetScore[]>(_ => true, scores => Match.ReportPlayer2Victory(scores), _ => startAction(), _ => endAction(), (_, ex) => errorHandler(ex));
+
+            Player1ToggleMissing = Command.CreateAsync(() => true, () => Match.Player1.IsMissing = !Match.Player1.IsMissing, startAction, endAction, errorHandler);
+            Player2ToggleMissing = Command.CreateAsync(() => true, () => Match.Player2.IsMissing = !Match.Player2.IsMissing, startAction, endAction, errorHandler);
+
+            AssignStation = Command.CreateAsync<Station>(_ => true, s => Match.AssignPlayersToStation(s.Name), _ => startAction(), _ => endAction(), (_, ex) => errorHandler(ex));
+            CallMatchAnywhere = Command.CreateAsync(() => true, () => Match.AssignPlayersToStation("Any"), startAction, endAction, errorHandler);
+            CallMatch = Command.CreateAsync<Station>(_ => true, s =>
             {
                 if (!match.IsMatchInProgress)
                 {
                     if (s != null) Match.AssignPlayersToStation(s.Name);
                     else Match.AssignPlayersToStation("Any");
                 }
-            });
-            UncallMatch = Command.Create(() => true, () => Match.ClearStationAssignment());
+            }, _ => startAction(), _ => endAction(), (_, ex) => errorHandler(ex));
+            UncallMatch = Command.CreateAsync(() => true, () => Match.ClearStationAssignment(), startAction, endAction, errorHandler);
         }
 
         public enum DisplayType

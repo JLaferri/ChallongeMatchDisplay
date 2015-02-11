@@ -380,7 +380,7 @@
                 </ProgressBar>
 
                 <Slider Grid.Row="3" Margin="3" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio}" Minimum="0.5" Maximum="2" SmallChange="0.1" LargeChange="0.2" 
-                        TickFrequency="0.05" IsSnapToTickEnabled="True" Orientation="Horizontal">
+                        TickFrequency="0.05" IsSnapToTickEnabled="True" Orientation="Horizontal" FocusVisualStyle="{x:Null}">
                     <Slider.Template>
                         <ControlTemplate TargetType="Slider">
                             <Grid>
@@ -412,7 +412,7 @@
             <TextBlock.Style>
                 <Style TargetType="TextBlock">
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Context.IsError}" Value="False">
+                        <DataTrigger Binding="{Binding Context.ErrorMessage}" Value="{x:Null}">
                             <Setter Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
                     </Style.Triggers>

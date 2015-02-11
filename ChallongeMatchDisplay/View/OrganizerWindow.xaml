@@ -37,7 +37,28 @@
         <KeyBinding Key="F1" Command="{Binding AutoAssignPending}" />
         <KeyBinding Key="F2" Command="{Binding CallPendingAnywhere}" />
     </Window.InputBindings>
+    <Window.Style>
+        <Style TargetType="Window">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                    <Setter Property="Cursor" Value="Wait" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
     <Grid Name="RootGrid">
+        <!-- Logic for disabling items when organizer is busy with a task -->
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -109,6 +130,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- Header Row -->
@@ -153,6 +175,7 @@
                 </Border>
             </Grid>
 
+            <!-- Match display -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" FocusVisualStyle="{x:Null}">
                 <ScrollViewer.Template>
                     <ControlTemplate TargetType="ScrollViewer">
@@ -469,8 +492,20 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+
+            <TextBlock Grid.Row="2" Margin="3" TextWrapping="Wrap" FontSize="16" Foreground="Red" Text="{Binding ErrorMessage}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ErrorMessage}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
             
-            <GroupBox Header="Instructions" Grid.Row="2">
+            <GroupBox Header="Instructions" Grid.Row="3">
                 <TextBlock Margin="3" TextWrapping="Wrap">
                     Click on a player panel to toggle that player's missing status. Right click a player panel to report matches. Click on an unassigned station panel to
                     assign to selected station or anywhere if no station selected. Right click a station panel to clear station assignment.

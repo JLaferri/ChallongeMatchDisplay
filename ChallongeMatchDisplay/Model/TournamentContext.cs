@@ -27,11 +27,18 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         private ObservableTournament _tournament;
         public ObservableTournament Tournament { get { return _tournament; } private set { this.RaiseAndSetIfChanged("Tournament", ref _tournament, value, PropertyChanged); } }
 
-        private bool _isError;
-        public bool IsError { get { return _isError; } private set { this.RaiseAndSetIfChanged("IsError", ref _isError, value, PropertyChanged); } }
+        public bool IsError { get { return _errorMessage != null; } }
 
         private string _errorMessage;
-        public string ErrorMessage { get { return _errorMessage; } private set { this.RaiseAndSetIfChanged("ErrorMessage", ref _errorMessage, value, PropertyChanged); } }
+        public string ErrorMessage 
+        { 
+            get { return _errorMessage; } 
+            private set 
+            { 
+                this.RaiseAndSetIfChanged("ErrorMessage", ref _errorMessage, value, PropertyChanged);
+                this.Raise("IsError", PropertyChanged);
+            } 
+        }
 
         private IDisposable pollSubscription = null;
 
@@ -43,7 +50,6 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 var participants = Portal.GetParticipants(tournamentId);
                 var matches = Portal.GetMatches(tournamentId);
 
-                IsError = false;
                 ErrorMessage = null;
 
                 return Tuple.Create(tournament, participants, matches);
@@ -51,10 +57,9 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             catch (ChallongeApiException ex)
             {
                 if (ex.Errors != null) ErrorMessage = ex.Errors.Aggregate((one, two) => one + "\r\n" + two);
-                else ErrorMessage = string.Format("Error with ResponseStatus \"{0}\" and StatusCode \"{1}\".", ex.RestResponse.ResponseStatus,
-                    ex.RestResponse.StatusCode);
+                else ErrorMessage = string.Format("Error with ResponseStatus \"{0}\" and StatusCode \"{1}\". {2}", ex.RestResponse.ResponseStatus,
+                    ex.RestResponse.StatusCode, ex.RestResponse.ErrorMessage);
 
-                IsError = true;
                 return null;
             }
         }
@@ -123,7 +128,16 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 foreach (var p in Tournament.Participants)
                 {
                     var miscDirtyable = p.Value.MiscProperties;
-                    miscDirtyable.CommitIfDirty(() => Portal.SetParticipantMisc(Tournament.Id, p.Value.Id, miscDirtyable.Value.ToString()));
+
+                    try
+                    {
+                        miscDirtyable.CommitIfDirty(() => Portal.SetParticipantMisc(Tournament.Id, p.Value.Id, miscDirtyable.Value.ToString()));
+                    }
+                    catch (Exception)
+                    {
+                        //If an exception is thrown trying to commit dirty data the object will stay marked as dirty and a commit will be attempted
+                        //next time a scan occurs. The error itself is ignored
+                    }
                 }
             }
         }
