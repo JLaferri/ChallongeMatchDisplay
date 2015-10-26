@@ -276,6 +276,11 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 
 				reinitializeStations(stations);
 			}
+			else
+			{
+				Station[] stations = new Station[0];
+				reinitializeStations(stations);
+			}
         }
 
 		public void Dispose()
