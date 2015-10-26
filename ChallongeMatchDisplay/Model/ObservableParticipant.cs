@@ -34,7 +34,23 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             set { SetMissing(value); }
         }
 
-        public DateTime? UtcTimeMissing { get { return MiscProperties.Value.UtcTimeMissing; } }
+		public string OverlayName
+		{
+			get {
+				string name = Name;
+				if (name.LastIndexOf("(") > 0)
+				{
+					if (name.LastIndexOf(")") > name.LastIndexOf("("))
+					{
+						name = name.Substring(0, name.LastIndexOf("(")).Trim();
+					}
+				}
+
+				return name;
+			}
+		}
+
+		public DateTime? UtcTimeMissing { get { return MiscProperties.Value.UtcTimeMissing; } }
 
         public TimeSpan? TimeSinceMissing { get { return UtcTimeMissing.HasValue ? DateTime.UtcNow - UtcTimeMissing.Value : default(TimeSpan?); } }
 

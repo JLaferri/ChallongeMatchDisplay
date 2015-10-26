@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Fizzi.Applications.ChallongeVisualization.ViewModel;
 
 namespace Fizzi.Applications.ChallongeVisualization.View
 {
@@ -23,5 +24,11 @@ namespace Fizzi.Applications.ChallongeVisualization.View
         {
             InitializeComponent();
         }
-    }
+
+		private void TournamentDoubleClick(object sender, MouseButtonEventArgs e)
+		{
+			var mvm = (MainViewModel)this.DataContext;
+			mvm.NextCommand.Execute(null);
+		}
+	}
 }

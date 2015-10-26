@@ -1,16 +1,22 @@
 ﻿using System;
+using System.Threading;
+using System.Windows.Threading;
+using System.Windows;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using Fizzi.Applications.ChallongeVisualization.Common;
+using Fizzi.Applications.ChallongeVisualization.View;
+using Fizzi.Applications.ChallongeVisualization.ViewModel;
 
 namespace Fizzi.Applications.ChallongeVisualization.Model
 {
     class Stations
-    {
-        #region Singleton Pattern Region
-        private static volatile Stations instance;
+	{
+		private SynchronizationContext _uiContext = SynchronizationContext.Current;
+		#region Singleton Pattern Region
+		private static volatile Stations instance;
         private static object syncRoot = new Object();
 
         private Stations() { }
@@ -32,7 +38,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         }
         #endregion
 
-        public Dictionary<string, Station> Dict { get; private set; }
+        public Dictionary<string, Station> Dict { get; set; }
 
         public void LoadNew(IEnumerable<Station> stations)
         {
@@ -111,12 +117,137 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 }
             }
         }
+
+		public void MoveDown(string name)
+		{
+			int newOrder = Dict[name].Order + 1;
+
+			if (newOrder < Dict.Count)
+			{ 
+				foreach (KeyValuePair<string, Station> entry in Dict)
+				{
+					Station station = entry.Value;
+					if (station.Order == newOrder)
+					{
+						station.Order = Dict[name].Order;
+						break;
+					}
+				}
+
+				Dict[name].Order++;
+			}
+        }
+
+		public void MoveUp(string name)
+		{
+			int newOrder = Dict[name].Order - 1;
+
+			if (newOrder >= 0)
+			{
+				foreach (KeyValuePair<string, Station> entry in Dict)
+				{
+					Station station = entry.Value;
+					if (station.Order == newOrder)
+					{
+						station.Order = Dict[name].Order;
+						break;
+					}
+				}
+
+				Dict[name].Order--;
+			}
+		}
+
+		public void Add(string name, string type)
+		{
+			if (name.Trim() != "")
+			{
+				if (!Dict.ContainsKey(name))
+				{
+					Station station = new Station(name, Dict.Count + 1);
+					station.SetType(type);
+					Dict.Add(name, station);
+					Save();
+				}
+			}
+        }
+
+		public void Delete(string name)
+		{
+			if (Dict.ContainsKey(name))
+			{
+				Dict.Remove(name);
+				Save();
+			}
+        }
+
+		public void Save()
+		{
+			List<Station> stations = new List<Station>();
+            Properties.Settings.Default.stationNames = new System.Collections.Specialized.StringCollection();
+			Properties.Settings.Default.stationTypes = new System.Collections.Specialized.StringCollection();
+
+			foreach (KeyValuePair<string, Station> entry in Dict)
+			{
+				stations.Add(entry.Value);
+			}
+
+			stations.Sort((a, b) => a.Order.CompareTo(b.Order));
+
+			foreach (Station station in stations)
+			{
+				Properties.Settings.Default.stationNames.Add(station.Name);
+				Properties.Settings.Default.stationTypes.Add(station.Type.ToString());
+			}
+
+			Properties.Settings.Default.Save();
+        }
+
+		public void NewAssignment(string stationName, ObservableParticipant player1, ObservableParticipant player2, ObservableMatch match)
+		{
+			_uiContext.Post(new SendOrPostCallback(new Action<object>(o => {
+				if (Application.Current.Windows.OfType<OrganizerWindow>().Count() > 0)
+				{
+					var view = Application.Current.Windows.OfType<OrganizerWindow>().First() as OrganizerWindow;
+
+					Station station;
+					if (Stations.Instance.Dict.TryGetValue(stationName, out station))
+					{
+						if (station.isPrimaryStream())
+						{
+							if (view.playersSwapped)
+								view.swapPlayers();
+
+							view.p1Score.Text = "0";
+							view.p2Score.Text = "0";
+							view.p1Name.Text = player1.OverlayName;
+							view.p2Name.Text = player2.OverlayName;
+							view.round.Text = match.RoundNamePreferred;
+
+							if (match.isWinnersGrandFinal)
+							{
+								if (match.Player1IsPrereqMatchLoser)
+								{
+									view.p1Name.Text += " (L)";
+									view.p2Name.Text += " (W)";
+								}
+								else
+								{
+									view.p1Name.Text += " (W)";
+									view.p2Name.Text += " (L)";
+								}
+                            }
+						}
+					}
+				}
+			})), null);
+        }
     }
 
     class Station : INotifyPropertyChanged
-    {
-        public string Name { get; private set; }
-        public int Order { get; private set; }
+	{
+		public string Name { get; set; }
+        public int Order { get; set; }
 
         private StationStatus _status;
         public StationStatus Status { get { return _status; } 
@@ -126,7 +257,21 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             } 
         }
 
-        public StationType Type { get; private set; }
+		public void SetType(string stationText)
+		{
+			stationText = stationText.ToLower().Trim();
+			StationType type = StationType.Standard;
+
+			if (stationText == "stream") type = StationType.Stream;
+			else if (stationText == "recording") type = StationType.Recording;
+			else if (stationText == "premium") type = StationType.Premium;
+			else if (stationText == "backup") type = StationType.Backup;
+			else if (stationText == "noassign") type = StationType.NoAssign;
+
+			this.Type = type;
+		}
+
+        public StationType Type { get; set; }
 
         public Station(string name, int order) : this(name, order, StationType.Standard) { }
 
@@ -138,6 +283,26 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             Status = StationStatus.Open;
         }
 
+		public bool isPrimaryStream()
+		{
+			if (this.Type == StationType.Stream)
+			{
+				foreach (KeyValuePair<string, Station> entry in Stations.Instance.Dict)
+				{
+					Station station = entry.Value;
+					if (station.Type == StationType.Stream)
+					{
+						if (entry.Key == this.Name)
+							return true;
+
+						return false;
+					}
+				}
+			}
+
+			return false;
+		}
+
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
@@ -147,7 +312,7 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         InUse
     }
 
-    enum StationType
+    public enum StationType
     {
         Stream,
         Recording,

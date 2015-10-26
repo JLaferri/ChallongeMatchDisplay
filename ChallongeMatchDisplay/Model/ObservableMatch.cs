@@ -6,6 +6,8 @@ using Fizzi.Libraries.ChallongeApiWrapper;
 using Fizzi.Applications.ChallongeVisualization.Common;
 using System.ComponentModel;
 using System.Reactive.Linq;
+using Fizzi.Applications.ChallongeVisualization.View;
+using Fizzi.Applications.ChallongeVisualization.ViewModel;
 
 namespace Fizzi.Applications.ChallongeVisualization.Model
 {
@@ -46,6 +48,112 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         //This property fixes the problem that can occur in double-elim brackets where challonge will call losers 2 losers 1 because losers 1 was all byes
         //This happens when the tournament has 5-6, 9-12, 17-24, etc players.
         public int Round { get; private set; }
+
+		public bool isWinnersGrandFinal
+		{
+			get
+			{
+				if (Round == OwningContext.Tournament.MaxRoundNumber)
+				{
+					if (!Player1IsPrereqMatchLoser && !Player2IsPrereqMatchLoser)
+						return true;
+				}
+
+				return false;
+			}
+		}
+
+		public string RoundNamePreferred
+		{
+			get
+			{
+				switch(Properties.Settings.Default.roundDisplayType)
+				{
+					case 1:
+						return RoundNameFull;
+					case 2:
+						return RoundName;
+					default:
+						return RoundNameCondensed;
+				}
+			}
+		}
+
+        public string RoundNameFull
+        { 
+            get 
+            { 
+                switch (OwningContext.Tournament.TournamentType)
+                {
+                    case "double elimination":
+                        string roundText;
+						
+                        if (Round < 0)
+                        {
+                            if (Round == OwningContext.Tournament.MinRoundNumber) roundText = "Losers Finals";
+                            else if (Round == OwningContext.Tournament.MinRoundNumber + 1) roundText = "Losers Semi Finals";
+                            else if (Round == OwningContext.Tournament.MinRoundNumber + 2) roundText = "Losers Quarter Finals";
+                            else roundText = "Losers Round " + Math.Abs(Round);
+                        }
+                        else
+                        {
+							if (Round == OwningContext.Tournament.MaxRoundNumber)
+							{
+								if (this.isWinnersGrandFinal)
+									roundText = "Winners Grand Finals";
+								else
+									roundText = "Losers Grand Finals";
+							}
+							else if (Round == OwningContext.Tournament.MaxRoundNumber - 1) roundText = "Winners Finals";
+							else if (Round == OwningContext.Tournament.MaxRoundNumber - 2) roundText = "Winners Semi Finals";
+							else if (Round == OwningContext.Tournament.MaxRoundNumber - 3) roundText = "Winners Quarter Finals";
+							else roundText = "Winners Round " + Round;
+                        }
+
+                        return roundText;
+                    default:
+                        return Round.ToString();
+                }
+            } 
+        }
+
+        public string RoundNameCondensed
+        { 
+            get 
+            { 
+                switch (OwningContext.Tournament.TournamentType)
+                {
+                    case "double elimination":
+                        string roundText;
+						
+                        if (Round < 0)
+                        {
+                            if (Round == OwningContext.Tournament.MinRoundNumber) roundText = "Losers Finals";
+                            else if (Round == OwningContext.Tournament.MinRoundNumber + 1) roundText = "L Semi Finals";
+                            else if (Round == OwningContext.Tournament.MinRoundNumber + 2) roundText = "L Quarter Finals";
+                            else roundText = "L Round " + Math.Abs(Round);
+                        }
+                        else
+                        {
+							if (Round == OwningContext.Tournament.MaxRoundNumber)
+							{
+								if (this.isWinnersGrandFinal)
+									roundText = "W Grand Finals";
+								else
+									roundText = "L Grand Finals";
+							}
+							else if (Round == OwningContext.Tournament.MaxRoundNumber - 1) roundText = "W Finals";
+							else if (Round == OwningContext.Tournament.MaxRoundNumber - 2) roundText = "W Semi Finals";
+							else if (Round == OwningContext.Tournament.MaxRoundNumber - 3) roundText = "W Quarter Finals";
+							else roundText = "W Round " + Round;
+                        }
+
+                        return roundText;
+                    default:
+                        return Round.ToString();
+                }
+            } 
+        }
 
         public string RoundName 
         { 
@@ -246,6 +354,9 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 //Assign players to a station
                 Player1.AssignStation(stationName);
                 Player2.AssignStation(stationName);
+
+				//if the organizer window is open, update the scoreboard if the primary stream was just assigned...
+				Stations.Instance.NewAssignment(stationName, Player1, Player2, this);
             }
         }
 

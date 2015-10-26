@@ -99,5 +99,43 @@ namespace Fizzi.Applications.ChallongeVisualization.View
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-    }
+
+		private void ScoreScrollWheel(object sender, MouseWheelEventArgs e)
+		{
+			int direction = 1;
+			if (e.Delta < 0) direction = -1;
+			TextBox source = (e.Source as TextBox);
+			adjustScore(source, direction);
+		}
+
+		private void adjustScore(TextBox source, int adjustment)
+		{
+			int value = 0;
+			int.TryParse(source.Text, out value);
+			value = value + adjustment;
+			if (value < 0) value = 0;
+			if (value > 99) value = 99;
+			source.Text = value.ToString();
+		}
+
+		private void p1Left_Click(object sender, RoutedEventArgs e)
+		{
+			adjustScore(player1Score, -1);
+		}
+
+		private void p1Right_Click(object sender, RoutedEventArgs e)
+		{
+			adjustScore(player1Score, 1);
+		}
+
+		private void p2Left_Click(object sender, RoutedEventArgs e)
+		{
+			adjustScore(player2Score, -1);
+		}
+
+		private void p2Right_Click(object sender, RoutedEventArgs e)
+		{
+			adjustScore(player2Score, 1);
+		}
+	}
 }
