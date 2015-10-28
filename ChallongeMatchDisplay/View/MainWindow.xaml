@@ -4,7 +4,7 @@
         xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
         xmlns:lvm="clr-namespace:Fizzi.Applications.ChallongeVisualization.ViewModel"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        Height="600" Width="700" Icon="/Challonge%20Match%20Display;component/Graphicloads-Food-Drink-Icecream-2.ico">
+        Height="600" Width="700" Icon="/Challonge%20Match%20Display;component/Graphicloads-Food-Drink-Icecream-2.ico" WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <lvm:MainViewModel />
     </Window.DataContext>

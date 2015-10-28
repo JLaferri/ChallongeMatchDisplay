@@ -73,29 +73,32 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         {
             CurrentScreen = ScreenType.ApiKey;
 
-            //Observable.Start(() =>
-            //{
-            //    try
-            //    {
-            //        //I'm considering doing an http request to smashboards to find if a new version is released. I think smashboard's anti-DDOS protection is preventing it from working
-            //        WebRequest request = WebRequest.Create(ThreadUrl);
-            //        request.Credentials = CredentialCache.DefaultCredentials;
+			ApiKey = Properties.Settings.Default.challonge_apikey;
+			Subdomain = Properties.Settings.Default.challonge_subdomain;
 
-            //        WebResponse response = request.GetResponse();
-            //        if (((HttpWebResponse)response).StatusDescription == "OK")
-            //        {
-            //            Stream dataStream = response.GetResponseStream();
-            //            StreamReader reader = new StreamReader(dataStream);
-            //            string responseFromServer = reader.ReadToEnd();
-            //            reader.Close();
-            //        }
-            //        response.Close();
-            //    }
-            //    catch { /* ignore */ }
-            //});
+			//Observable.Start(() =>
+			//{
+			//    try
+			//    {
+			//        //I'm considering doing an http request to smashboards to find if a new version is released. I think smashboard's anti-DDOS protection is preventing it from working
+			//        WebRequest request = WebRequest.Create(ThreadUrl);
+			//        request.Credentials = CredentialCache.DefaultCredentials;
 
-            //Modify ViewModel state when an action is initiated
-            Action startAction = () =>
+			//        WebResponse response = request.GetResponse();
+			//        if (((HttpWebResponse)response).StatusDescription == "OK")
+			//        {
+			//            Stream dataStream = response.GetResponseStream();
+			//            StreamReader reader = new StreamReader(dataStream);
+			//            string responseFromServer = reader.ReadToEnd();
+			//            reader.Close();
+			//        }
+			//        response.Close();
+			//    }
+			//    catch { /* ignore */ }
+			//});
+
+			//Modify ViewModel state when an action is initiated
+			Action startAction = () =>
             {
                 ErrorMessage = null;
                 IsBusy = true;
@@ -210,7 +213,7 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                 switch (CurrentScreen)
                 {
                     case ScreenType.TournamentSelection:
-                        ApiKey = null;
+                        ApiKey = Properties.Settings.Default.challonge_apikey;
                         break;
                     case ScreenType.PendingMatchView:
                         if (OrgViewModel != null)
@@ -224,7 +227,13 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
             }, startAction, endAction, errorHandler);
 
             IgnoreVersionNotification = Command.Create(() => true, () => IsVersionOutdatedVisible = false);
-        }
+
+
+			if (ApiKey != "")
+			{
+				NextCommand.Execute(null);
+			}
+		}
 
         public event PropertyChangedEventHandler PropertyChanged;
     }

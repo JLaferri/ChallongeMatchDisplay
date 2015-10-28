@@ -17,7 +17,7 @@
         </TextBlock>
         
         <ListView Grid.Row="1" Margin="12" ItemsSource="{Binding TournamentCollection}" 
-                                                  SelectedItem="{Binding SelectedTournament, UpdateSourceTrigger=PropertyChanged}">
+                                                  SelectedItem="{Binding SelectedTournament, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="TournamentDoubleClick">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}" Margin="6" FontSize="18" />

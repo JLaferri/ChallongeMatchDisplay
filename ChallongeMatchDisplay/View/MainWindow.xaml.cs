@@ -37,6 +37,6 @@ namespace Fizzi.Applications.ChallongeVisualization.View
             mvm.IgnoreVersionNotification.Execute(null);
 
             ((Expander)sender).IsExpanded = true;
-        }
+		}
     }
 }

@@ -39,7 +39,7 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
         private IDisposable stationMonitoring;
 
         public ICommand ImportStationFile { get; private set; }
-
+		
         public ICommand AutoAssignPending { get; private set; }
         public ICommand CallPendingAnywhere { get; private set; }
         public ICommand ClearAllAssignments { get; private set; }
@@ -134,10 +134,13 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 
                 foreach (var s in stationsWithAssignments) s.Match.ClearStationAssignment();
             }, startAction, endAction, errorHandler);
-        }
+		}
 
         private void initialize(DisplayMatch[] matches)
         {
+			//load stations from settings...
+			loadStationsFromSettings();
+
             //Clear the observable collection that is used to display matches on screen
             OpenMatches.Clear();
 
@@ -165,15 +168,19 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
             matchStateMonitoring = new CompositeDisposable(subscriptions);
         }
 
-        private void initializeStations(Station[] uniqueStations)
+        public void reinitializeStations(Station[] uniqueStations)
         {
             //Load stations
             OpenStations.Clear();
 
             if (stationMonitoring != null) stationMonitoring.Dispose();
 
-            //Start by adding all stations as open stations to the collection
-            foreach (var s in uniqueStations) OpenStations.Add(s);
+			//Start by adding all stations as open stations to the collection
+			foreach (var s in uniqueStations)
+			{
+				if (s.Status == StationStatus.Open)
+					OpenStations.Add(s);
+			}
 
             //Load up Stations instance with new stations
             var stations = Stations.Instance;
@@ -201,6 +208,8 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
             }
 
             stationMonitoring = new CompositeDisposable(subscriptions);
+
+			stations.Save();
         }
 
         private void initializeStations(string filePath)
@@ -236,10 +245,45 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
             }).Select((a, i) => new Station(a.Name, i, a.Type)).ToArray();
 
             //Initialize stations
-            initializeStations(uniqueStations);
+            reinitializeStations(uniqueStations);
         }
 
-        public void Dispose()
+        private void loadStationsFromSettings()
+        {
+			if (Properties.Settings.Default.stationNames != null && Properties.Settings.Default.stationNames.Count > 0)
+			{
+				Station[] stations = new Station[Properties.Settings.Default.stationNames.Count];
+
+				for (int x = 0; x < Properties.Settings.Default.stationNames.Count; x++)
+				{
+					StationType type = StationType.Standard;
+					string name = Properties.Settings.Default.stationNames[x];
+					string stationText;
+                    if (Properties.Settings.Default.stationTypes != null && Properties.Settings.Default.stationTypes.Count > x)
+						stationText = Properties.Settings.Default.stationTypes[x].Trim().ToLower();
+					else
+						stationText = "";
+
+					if (stationText == "stream") type = StationType.Stream;
+					else if (stationText == "recording") type = StationType.Recording;
+					else if (stationText == "premium") type = StationType.Premium;
+					else if (stationText == "backup") type = StationType.Backup;
+					else if (stationText == "noassign") type = StationType.NoAssign;
+
+					Station station = new Station(name, x, type);
+					stations[x] = station;
+				}
+
+				reinitializeStations(stations);
+			}
+			else
+			{
+				Station[] stations = new Station[0];
+				reinitializeStations(stations);
+			}
+        }
+
+		public void Dispose()
         {
             if (matchStateMonitoring != null) matchStateMonitoring.Dispose();
             if (matchesMonitoring != null) matchesMonitoring.Dispose();
