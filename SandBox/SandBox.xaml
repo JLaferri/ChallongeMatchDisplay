@@ -1,0 +1,70 @@
+﻿<Window x:Class="PlayGround.SandBox"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Engine="clr-namespace:PlayGround.Engine.Controls"
+    xmlns:Emitter="clr-namespace:PlayGround.Engine.Emitters"
+    Title="SandBox" Height="300" Width="300"
+    >
+  <Grid Background="Transparent" >
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition  />
+      <ColumnDefinition  />
+    </Grid.ColumnDefinitions>
+    <Engine:ParticleSystem Width="60" Height="30" Background="Transparent" 
+                           x:Name="FireParticleSystem" Grid.Column="0" >
+      <Engine:ParticleSystem.Emitters>
+        <Emitter:LineEmitter  X1="4" Y1="0" X2="49" Y2="0" MaxParticles="300" 
+                             MinHorizontalVelocity="-1.0" MaxHorizontalVelocity="1.0"
+                             MinVerticalVelocity="-14.0" MaxVerticalVelocity="0.0"
+                             StartOpacity="0.3" EndOpacity="0.0" 
+                             MinLifeSpan="1.1" MaxLifeSpan="4.2" >
+          <Emitter:LineEmitter.ColorKeyFrames>
+            <ColorKeyFrameCollection>
+              <LinearColorKeyFrame Value="Yellow" KeyTime="0%" />
+              <LinearColorKeyFrame Value="Orange" KeyTime="20%" />
+              <LinearColorKeyFrame Value="Red" KeyTime="50%" />
+              <LinearColorKeyFrame Value="Gray" KeyTime="90%" />
+            </ColorKeyFrameCollection>
+          </Emitter:LineEmitter.ColorKeyFrames>
+        </Emitter:LineEmitter>
+      </Engine:ParticleSystem.Emitters>
+      <Engine:ParticleSystem.Gravity>
+        <Vector X="0" Y="0.1" />
+      </Engine:ParticleSystem.Gravity>
+      <Engine:ParticleSystem.Drag>
+        <Vector X="3.3" Y="0.3" />
+      </Engine:ParticleSystem.Drag>
+      <Button Width="60" Height="30" Canvas.Left="0" Canvas.Top="0" Content="FIRE" 
+              MouseEnter="MyButtonMouseEnter" MouseLeave="MyButtonMouseLeave" />
+    </Engine:ParticleSystem>
+    <Engine:ParticleSystem Width="60" Height="30" Background="Transparent" 
+                           x:Name="GooParticleSystem" Grid.Column="1" >
+      <Engine:ParticleSystem.Emitters>
+        <Emitter:MeatballEmitter X1="8" Y1="28" X2="48" Y2="28" MaxParticles="90"  
+                             MinHorizontalVelocity="0.0" MaxHorizontalVelocity="0.0"
+                             MinVerticalVelocity="0.0" MaxVerticalVelocity="0.0"
+                             StartOpacity="1.0" EndOpacity="1.0" 
+                             MinLifeSpan="40" MaxLifeSpan="40"
+                             MinMass="2.0"  MaxMass="10.0" 
+                             MinSpringConstant="1.0" MaxSpringConstant="6.0"
+                             MinDampeningConstant="0.01" MaxDampeningConstant="0.10" 
+                             MinRestLength="1.0" MaxRestLength="6.0"
+                             MinParticleWidth="6.0" MaxParticleWidth="6.0" 
+                             MinParticleHeight="8.0" MaxParticleHeight="12.0" >
+          <Emitter:MeatballEmitter.ColorKeyFrames>
+            <ColorKeyFrameCollection>
+              <LinearColorKeyFrame Value="Black" KeyTime="0%" />
+            </ColorKeyFrameCollection>
+          </Emitter:MeatballEmitter.ColorKeyFrames>
+        </Emitter:MeatballEmitter>
+      </Engine:ParticleSystem.Emitters>
+      <Engine:ParticleSystem.Gravity>
+        <Vector X="0" Y="0.4" />
+      </Engine:ParticleSystem.Gravity>
+      <Engine:ParticleSystem.Drag>
+        <Vector X="10.0" Y="0.3" />
+      </Engine:ParticleSystem.Drag>
+      <Button Width="60" Height="30" Canvas.Left="0" Canvas.Top="0" Canvas.ZIndex="100" Click="MyButtonClicked" Content="GOO" />
+    </Engine:ParticleSystem>
+  </Grid>
+</Window>

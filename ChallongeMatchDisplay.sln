@@ -1,9 +1,13 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChallongeVisualization", "ChallongeMatchDisplay\ChallongeVisualization.csproj", "{CA5673AD-D9D2-4292-9921-6AD3FC041607}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChallongeApiWrapper", "ChallongeApiWrapper\ChallongeApiWrapper.csproj", "{BEC62B0A-47BA-4018-9EF8-A6B159AA11E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SandBox", "SandBox\SandBox.csproj", "{70FEB780-FDBF-460B-849D-1CA6213E7202}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +49,22 @@ Global
 		{BEC62B0A-47BA-4018-9EF8-A6B159AA11E4}.Release|x64.ActiveCfg = Release|Any CPU
 		{BEC62B0A-47BA-4018-9EF8-A6B159AA11E4}.Release|x86.ActiveCfg = Release|Any CPU
 		{BEC62B0A-47BA-4018-9EF8-A6B159AA11E4}.Release|x86.Build.0 = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|x64.Build.0 = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Debug|x86.Build.0 = Debug|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|x64.ActiveCfg = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|x64.Build.0 = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|x86.ActiveCfg = Release|Any CPU
+		{70FEB780-FDBF-460B-849D-1CA6213E7202}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

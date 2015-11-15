@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Reflection;
@@ -15,6 +16,7 @@ using RestSharp;
 using System.Collections.ObjectModel;
 using Fizzi.Applications.ChallongeVisualization.Properties;
 using System.Xml.Linq;
+using Fizzi.Applications.ChallongeVisualization.View;
 
 namespace Fizzi.Applications.ChallongeVisualization.ViewModel
 {
@@ -199,6 +201,14 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                                         .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
                                 }
                             }
+
+							if (e.PropertyName == "ProgressMeter")
+							{
+								if (Context.Tournament.ProgressMeter == 100)
+								{
+
+								}
+							}
                         });
                         Context.Tournament.PropertyChanged += matchesChangedHandler;
 
@@ -220,8 +230,8 @@ namespace Fizzi.Applications.ChallongeVisualization.ViewModel
                         {
                             OrgViewModel.Dispose();
                             OrgViewModel = null;
-                        }
-                        break;
+						}
+						break;
                 }
                 CurrentScreen = (ScreenType)((int)CurrentScreen - 1);
             }, startAction, endAction, errorHandler);

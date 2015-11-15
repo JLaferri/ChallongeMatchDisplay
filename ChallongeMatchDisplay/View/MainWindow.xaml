@@ -72,7 +72,7 @@
             </Grid>
         </Border>
         
-        <ContentControl Grid.Row="1">
+        <ContentControl x:Name="content" Grid.Row="1">
             <ContentControl.Style>
                 <Style TargetType="ContentControl">
                     <Style.Triggers>

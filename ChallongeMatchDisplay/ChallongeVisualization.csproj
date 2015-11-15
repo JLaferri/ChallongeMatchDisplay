@@ -140,6 +140,9 @@
     <Compile Include="View\AboutView.Designer.cs">
       <DependentUpon>AboutView.cs</DependentUpon>
     </Compile>
+    <Compile Include="View\ApiWarning.xaml.cs">
+      <DependentUpon>ApiWarning.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\NewMatchOptionSelectionConverter.cs" />
     <Compile Include="View\MatchDisplayView.xaml.cs">
       <DependentUpon>MatchDisplayView.xaml</DependentUpon>
@@ -165,6 +168,10 @@
       <DependentUpon>TournamentSelectionView.xaml</DependentUpon>
     </Compile>
     <Page Include="View\ApiKeyView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ApiWarning.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -251,6 +258,10 @@
     <ProjectReference Include="..\ChallongeApiWrapper\ChallongeApiWrapper.csproj">
       <Project>{BEC62B0A-47BA-4018-9EF8-A6B159AA11E4}</Project>
       <Name>ChallongeApiWrapper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SandBox\SandBox.csproj">
+      <Project>{70feb780-fdbf-460b-849d-1ca6213e7202}</Project>
+      <Name>SandBox</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Fizzi.Applications.ChallongeVisualization.ViewModel;
+using Fizzi.Applications.ChallongeVisualization.Model;
 using System.ComponentModel;
 using Fizzi.Applications.ChallongeVisualization.Common;
 using System.Reactive.Linq;
@@ -95,8 +96,20 @@ namespace Fizzi.Applications.ChallongeVisualization.View
         OrganizerWindow organizerWindow = null;
 
         private void TOButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (organizerWindow == null)
+		{
+			//**************************Easily test the end tournament animation...
+			/*
+			List<ObservableParticipant> top4 = new List<ObservableParticipant>();
+			var mvm2 = this.DataContext as MainViewModel;
+			top4.Add(mvm2.Context.Tournament.Participants.ElementAt(0).Value);
+			top4.Add(mvm2.Context.Tournament.Participants.ElementAt(1).Value);
+			top4.Add(mvm2.Context.Tournament.Participants.ElementAt(2).Value);
+			top4.Add(mvm2.Context.Tournament.Participants.ElementAt(3).Value);
+			Stations.Instance.CompletionChange(true, top4);
+			return;
+			*/
+
+			if (organizerWindow == null)
             {
                 var mvm = this.DataContext as MainViewModel;
                 var organizerVm = mvm.OrgViewModel;
@@ -125,13 +138,23 @@ namespace Fizzi.Applications.ChallongeVisualization.View
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (organizerWindow != null)
+		{
+			Winners.Visibility = Visibility.Collapsed;
+			MyParticleSystem.Visibility = Visibility.Collapsed;
+			MyParticleSystem.Stop();
+
+			if (organizerWindow != null)
             {
                 organizerWindow.Close();
             }
+		}
+
+		public void CompleteAnimation()
+		{
+			MyParticleSystem.Visibility = Visibility.Visible;
+			MyParticleSystem.Start();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler PropertyChanged;
     }
 }

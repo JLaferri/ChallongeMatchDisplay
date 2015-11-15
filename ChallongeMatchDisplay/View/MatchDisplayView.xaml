@@ -5,9 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
+			 xmlns:Engine="clr-namespace:PlayGround.Engine.Controls;assembly=SandBox"
+			 xmlns:Emitter="clr-namespace:PlayGround.Engine.Emitters;assembly=SandBox"
+			 xmlns:Force="clr-namespace:PlayGround.Engine.Forces;assembly=SandBox"
+			 xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300"
              Name="TopLevelControl" IsHitTestVisible="True">
     <UserControl.Resources>
+        <sys:Int32 x:Key="Negative150">-150</sys:Int32>
         <CollectionViewSource x:Key="Matches" Source="{Binding DisplayMatches}">
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="MatchDisplayType" Direction="Ascending" />
@@ -31,6 +36,9 @@
         <Border Grid.Row="0" Margin="12">
             <Grid Grid.IsSharedSizeScope="True">
                 <Grid.Resources>
+                    <Style x:Key="FontBase40" TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=40}" />
+                    </Style>
                     <Style x:Key="FontBase22" TargetType="TextBlock">
                         <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=22}" />
                     </Style>
@@ -124,6 +132,43 @@
                         </Border>
                     </Grid>
                 </Grid>
+
+                <StackPanel x:Name="Winners" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                    <TextBlock RenderTransformOrigin="0.5, 0.5" x:Name="winner1" Margin="10" Style="{StaticResource FontBase40}" FontWeight="Bold" Text="Winner" HorizontalAlignment="Center" Foreground="#FF333333">
+                        <TextBlock.RenderTransform>
+                               <ScaleTransform />
+                        </TextBlock.RenderTransform>
+                        <TextBlock.Triggers>
+                            <EventTrigger RoutedEvent="TextBlock.Loaded">
+								<BeginStoryboard>
+									<Storyboard>
+                                        <DoubleAnimation
+											Storyboard.TargetName="winner1" 
+											Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+											From="1.2" To="1.0" Duration="0:0:0.5" 
+											AutoReverse="True" RepeatBehavior="Forever">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseIn" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation
+											Storyboard.TargetName="winner1" 
+											Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+											From="1.2" To="1.0" Duration="0:0:0.5" 
+											AutoReverse="True" RepeatBehavior="Forever">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseIn" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+								</BeginStoryboard>
+							</EventTrigger>
+						</TextBlock.Triggers>
+                    </TextBlock>
+                    <TextBlock x:Name="winner2" Margin="2" Style="{StaticResource FontBase22}" FontWeight="Bold" Text="Second" HorizontalAlignment="Center" Foreground="#FF444444"/>
+                    <TextBlock x:Name="winner3" Margin="2" Style="{StaticResource FontBase22}" FontWeight="Bold" Text="Third" HorizontalAlignment="Center" Foreground="#FF555555"/>
+                    <TextBlock x:Name="winner4" Margin="2" Style="{StaticResource FontBase22}" FontWeight="Bold" Text="Fourth" HorizontalAlignment="Center" Foreground="#FF666666"/>
+                </StackPanel>
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
                     <ScrollViewer.Template>
@@ -419,5 +464,33 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
+
+        <Engine:ParticleSystem RenderTransformOrigin="0.5, 0.5" Background="Transparent" x:Name="MyParticleSystem" Panel.ZIndex="-10" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-30,-80,0,0" >
+            <Engine:ParticleSystem.RenderTransform>
+                <ScaleTransform CenterY="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=30}" ScaleX="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=1}" ScaleY="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=1}" />
+            </Engine:ParticleSystem.RenderTransform>
+            <Engine:ParticleSystem.Emitters>
+                <Emitter:PointEmitter MaxParticles="10"
+						MinPositionOffsetY="-5" MaxPositionOffsetY="5"
+						MinPositionOffsetX="-150" MaxPositionOffsetX="150"
+                         MinHorizontalVelocity="-200" MaxHorizontalVelocity="200"
+                         MinVerticalVelocity="-300" MaxVerticalVelocity="-200"
+                         StartOpacity="0.5" EndOpacity="0.5"
+                         MinLifeSpan="10" MaxLifeSpan="10"
+                         MinMass="20"  MaxMass="50.0"
+                         MinParticleWidth="10" MaxParticleWidth="20"
+                         MinParticleHeight="10" MaxParticleHeight="20">
+                    <Emitter:PointEmitter.ColorKeyFrames>
+                        <ColorKeyFrameCollection>
+                            <LinearColorKeyFrame Value="Transparent" KeyTime="0%" />
+                            <LinearColorKeyFrame Value="DarkRed" KeyTime="2%" />
+                        </ColorKeyFrameCollection>
+                    </Emitter:PointEmitter.ColorKeyFrames>
+                </Emitter:PointEmitter>
+            </Engine:ParticleSystem.Emitters>
+            <Engine:ParticleSystem.Gravity>
+                <Vector X="0" Y="300" />
+            </Engine:ParticleSystem.Gravity>
+        </Engine:ParticleSystem>
     </Grid>
 </UserControl>

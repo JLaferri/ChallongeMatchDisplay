@@ -142,6 +142,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
             }
         }
 
+		public void EndTournament()
+		{
+			Portal.EndTournament(tournamentId);
+		}
+
         public void Dispose()
         {
             StopSynchronization();

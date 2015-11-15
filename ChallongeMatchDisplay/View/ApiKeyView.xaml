@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
@@ -24,11 +25,11 @@
             </Grid.ColumnDefinitions>
             
             <TextBlock Grid.Column="0" Grid.Row="0" Text="API Key" Margin="6" FontSize="18" />
-            <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}" Margin="6" FontSize="18">
-                <TextBox.ToolTip>
+            <PasswordBox Grid.Column="1" Grid.Row="0" Margin="6" FontSize="18" lview:PasswordBoxAssistant.BindPassword="true"  lview:PasswordBoxAssistant.BoundPassword="{Binding Path=ApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <PasswordBox.ToolTip>
                     The API key of a challonge account. Your API key can be found on the challonge site.
-                </TextBox.ToolTip>
-            </TextBox>
+                </PasswordBox.ToolTip>
+            </PasswordBox>
 
             <TextBlock Grid.Column="0" Grid.Row="1" Text="Subdomain" Margin="6" FontSize="18" />
             <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Subdomain, UpdateSourceTrigger=PropertyChanged}" Margin="6" FontSize="18">

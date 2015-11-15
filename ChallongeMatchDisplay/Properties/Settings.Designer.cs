@@ -128,5 +128,17 @@ namespace Fizzi.Applications.ChallongeVisualization.Properties {
                 this["roundDisplayType"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int outputFormat {
+            get {
+                return ((int)(this["outputFormat"]));
+            }
+            set {
+                this["outputFormat"] = value;
+            }
+        }
     }
 }

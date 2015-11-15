@@ -35,13 +35,14 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 			InitializeComponent();
 			
 			_mvm = Application.Current.MainWindow.DataContext as MainViewModel;
-			apiKeyTextBox.Text = _mvm.ApiKey;
+			apiKeyTextBox.Password = _mvm.ApiKey;
 			subdomainTextBox.Text = _mvm.Subdomain;
 			overlayPath.Text = Properties.Settings.Default.overlayPath;
 			saveChallonge.IsChecked = Properties.Settings.Default.challonge_save;
 			enableScoreboard.IsChecked = Properties.Settings.Default.enableScoreboard;
 			showInstructions.IsChecked = Properties.Settings.Default.showInstructions;
 			roundDisplay.SelectedIndex = Properties.Settings.Default.roundDisplayType;
+			outputFormat.SelectedIndex = Properties.Settings.Default.outputFormat;
 
 			Update_Challonge_Checkbox();
 			Update_Scoreboard_Checkbox();
@@ -51,17 +52,18 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 		{
 			if (saveChallonge.IsChecked == false)
 			{
-				apiKeyTextBox.Text = "";
+				apiKeyTextBox.Password = "";
 				subdomainTextBox.Text = "";
             }
 
 			Properties.Settings.Default.challonge_save = (bool)saveChallonge.IsChecked;
-			Properties.Settings.Default.challonge_apikey = apiKeyTextBox.Text;
+			Properties.Settings.Default.challonge_apikey = apiKeyTextBox.Password;
 			Properties.Settings.Default.challonge_subdomain = subdomainTextBox.Text;
 			Properties.Settings.Default.overlayPath = overlayPath.Text;
 			Properties.Settings.Default.enableScoreboard = (bool)enableScoreboard.IsChecked;
 			Properties.Settings.Default.showInstructions = (bool)showInstructions.IsChecked;
 			Properties.Settings.Default.roundDisplayType = roundDisplay.SelectedIndex;
+			Properties.Settings.Default.outputFormat = outputFormat.SelectedIndex;
 
 			_mvm.ApiKey = Properties.Settings.Default.challonge_apikey;
 			_mvm.Subdomain = Properties.Settings.Default.challonge_subdomain;
@@ -102,6 +104,7 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 				browse.IsEnabled = true;
 				roundDisplay.IsEnabled = true;
 				roundLabel.IsEnabled = true;
+				outputFormat.IsEnabled = true;
 			}
 			else
 			{
@@ -110,11 +113,19 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 				browse.IsEnabled = false;
 				roundLabel.IsEnabled = false;
 				roundDisplay.IsEnabled = false;
+				outputFormat.IsEnabled = false;
 			}
 		}
 
 		private void SaveChallonge_Click(object sender, RoutedEventArgs e)
 		{
+			if (saveChallonge.IsChecked == true)
+			{
+				ApiWarning dialog = new ApiWarning();
+				if (dialog.ShowDialog() == false)
+					saveChallonge.IsChecked = false;
+			}
+
 			Update_Challonge_Checkbox();
         }
 

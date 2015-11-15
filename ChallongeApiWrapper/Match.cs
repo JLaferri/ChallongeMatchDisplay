@@ -16,6 +16,8 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
         public int? Player1PrereqMatchId { get; set; }
         public bool Player2IsPrereqMatchLoser { get; set; }
         public int? Player2PrereqMatchId { get; set; }
+        public int? WinnerId { get; set; }
+        public int? LoserId { get; set; }
 
         public int Round { get; set; }
         public string State { get; set; }

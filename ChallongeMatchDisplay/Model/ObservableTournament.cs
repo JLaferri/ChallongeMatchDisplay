@@ -9,8 +9,8 @@ using Fizzi.Applications.ChallongeVisualization.Common;
 namespace Fizzi.Applications.ChallongeVisualization.Model
 {
     class ObservableTournament : INotifyPropertyChanged
-    {
-        private static System.Reflection.PropertyInfo[] tournamentProperties = typeof(Tournament).GetProperties();
+	{
+		private static System.Reflection.PropertyInfo[] tournamentProperties = typeof(Tournament).GetProperties();
 
         private Tournament source;
 
@@ -71,6 +71,16 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
                 if (!object.Equals(property.GetValue(oldData, null), property.GetValue(newData, null))) this.Raise(property.Name, PropertyChanged);
             }
 
+			if (oldData.ProgressMeter != newData.ProgressMeter)
+			{
+				Stations.Instance.ProgressChange(newData.ProgressMeter);
+			}
+
+			if (oldData.CompletedAt != newData.CompletedAt)
+			{
+				Stations.Instance.CompletionChange(newData.CompletedAt != null, TopFourParticipants());
+			}
+
             //Check if there are any new participants, or if participants have been removed. Also check if match count has changed.
             var participantIntersect = Participants.Select(kvp => kvp.Key).Intersect(playerList.Select(p => p.Id));
             var participantsChanged = Participants.Select(kvp => kvp.Key).Union(playerList.Select(p => p.Id)).Except(participantIntersect).Any();
@@ -92,5 +102,30 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         }
         
         public event PropertyChangedEventHandler PropertyChanged;
-    }
+
+		public List<ObservableParticipant> TopFourParticipants()
+		{
+			List<ObservableParticipant> top4 = new List<ObservableParticipant>();
+
+			//kludgy way to figure out the top 4 if the tournament is complete...
+			if (Matches.Count > 3 && CompletedAt != null)
+			{
+				int x = Matches.Count - 1;
+				top4.Add(Matches.ElementAt(x).Value.Winner);
+				top4.Add(Matches.ElementAt(x).Value.Loser);
+				if (Matches.ElementAt(x).Value.isWinnersGrandFinal == false)
+					x--;
+
+				top4.Add(Matches.ElementAt(x - 1).Value.Loser);
+				top4.Add(Matches.ElementAt(x - 2).Value.Loser);
+			}
+
+			return top4;
+        }
+
+		public void EndTournament()
+		{
+			OwningContext.EndTournament();
+		}
+	}
 }
