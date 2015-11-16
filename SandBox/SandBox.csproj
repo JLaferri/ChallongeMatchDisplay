@@ -8,7 +8,7 @@
     <RootNamespace>SandBox</RootNamespace>
     <AssemblyName>SandBox</AssemblyName>
     <WarningLevel>4</WarningLevel>
-    <OutputType>winexe</OutputType>
+    <OutputType>Library</OutputType>
     <MinFrameworkVersionRequired>3.0</MinFrameworkVersionRequired>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
@@ -43,6 +43,9 @@
     <OutputPath>.\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
@@ -61,10 +64,6 @@
     <Reference Include="System.IdentityModel" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
     <Page Include="SandBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -73,10 +72,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
