@@ -22,6 +22,8 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 
         public int? Player1Id { get { return source.Player1Id; } }
         public int? Player2Id { get { return source.Player2Id; } }
+        public int? WinnerId { get { return source.WinnerId; } }
+        public int? LoserId { get { return source.LoserId; } }
 
         public bool Player1IsPrereqMatchLoser { get { return source.Player1IsPrereqMatchLoser; } }
         public int? Player1PrereqMatchId { get { return source.Player1PrereqMatchId; } }
@@ -39,6 +41,8 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
         #region Convenience Properties
         public ObservableParticipant Player1 { get { return Player1Id.HasValue && OwningContext.Tournament.Participants.ContainsKey(Player1Id.Value) ? OwningContext.Tournament.Participants[Player1Id.Value] : null; } }
         public ObservableParticipant Player2 { get { return Player2Id.HasValue && OwningContext.Tournament.Participants.ContainsKey(Player2Id.Value) ? OwningContext.Tournament.Participants[Player2Id.Value] : null; } }
+        public ObservableParticipant Winner { get { return WinnerId.HasValue && OwningContext.Tournament.Participants.ContainsKey(WinnerId.Value) ? OwningContext.Tournament.Participants[WinnerId.Value] : null; } }
+        public ObservableParticipant Loser { get { return LoserId.HasValue && OwningContext.Tournament.Participants.ContainsKey(LoserId.Value) ? OwningContext.Tournament.Participants[LoserId.Value] : null; } }
 
         public ObservableMatch Player1PreviousMatch { get { return Player1PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player1PrereqMatchId.Value] : null; } }
         public ObservableMatch Player2PreviousMatch { get { return Player2PrereqMatchId.HasValue ? OwningContext.Tournament.Matches[Player2PrereqMatchId.Value] : null; } }

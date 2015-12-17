@@ -242,6 +242,62 @@ namespace Fizzi.Applications.ChallongeVisualization.Model
 				}
 			})), null);
         }
+
+		public void ProgressChange(int newProgress)
+		{
+			_uiContext.Post(new SendOrPostCallback(new Action<object>(o => {
+				if (Application.Current.Windows.OfType<OrganizerWindow>().Count() > 0)
+				{
+					var view = Application.Current.Windows.OfType<OrganizerWindow>().First() as OrganizerWindow;
+
+					if (newProgress == 100)
+						view.endTournament.Visibility = Visibility.Visible;
+					else
+						view.endTournament.Visibility = Visibility.Collapsed;
+				}
+			})), null);
+		}
+
+		public void CompletionChange(bool complete, List<ObservableParticipant> top4)
+		{
+			_uiContext.Post(new SendOrPostCallback(new Action<object>(o => {
+				OrganizerWindow organizerView = null;
+				if (Application.Current.Windows.OfType<OrganizerWindow>().Count() > 0) organizerView = Application.Current.Windows.OfType<OrganizerWindow>().First() as OrganizerWindow;
+				MatchDisplayView stationView = (MatchDisplayView)Application.Current.Windows.OfType<MainWindow>().First().content.Content;
+
+				if (complete)
+				{
+					if (organizerView != null)
+						organizerView.endTournament.Visibility = Visibility.Collapsed;
+
+					if (top4.Count == 4)
+					{
+						if (organizerView != null)
+						{
+							organizerView.round.Text = top4[0].OverlayName + " Wins!";
+							organizerView.p1Name.Text = "Player One";
+							organizerView.p2Name.Text = "Player Two";
+							organizerView.p1Score.Text = "0";
+							organizerView.p2Score.Text = "0";
+						}
+
+						stationView.Winners.Visibility = Visibility.Visible;
+						stationView.winner1.Text = top4[0].OverlayName + " Wins!";
+						stationView.winner2.Text = "2nd: " + top4[1].OverlayName;
+						stationView.winner3.Text = "3rd: " + top4[2].OverlayName;
+						stationView.winner4.Text = "4th: " + top4[3].OverlayName;
+						stationView.CompleteAnimation();
+					}
+				}
+				else
+				{
+					if (organizerView != null)
+						organizerView.endTournament.Visibility = Visibility.Visible;
+
+					stationView.Winners.Visibility = Visibility.Collapsed;
+				}
+			})), null);
+		}
     }
 
     class Station : INotifyPropertyChanged

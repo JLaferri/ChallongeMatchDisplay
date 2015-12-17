@@ -42,6 +42,5 @@
             <Button DockPanel.Dock="Left" Grid.Row="2" Margin="12" Width="140" HorizontalAlignment="Left" FontSize="18" Content="Back"
                     Command="{Binding Back}" />
         </DockPanel>
-        
     </Grid>
 </UserControl>

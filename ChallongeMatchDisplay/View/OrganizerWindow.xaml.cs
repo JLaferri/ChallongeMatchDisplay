@@ -15,6 +15,7 @@ using Fizzi.Applications.ChallongeVisualization.ViewModel;
 using Fizzi.Applications.ChallongeVisualization.Common;
 using Fizzi.Applications.ChallongeVisualization.Model;
 using Fizzi.Libraries.ChallongeApiWrapper;
+using System.Xml;
 
 namespace Fizzi.Applications.ChallongeVisualization.View
 {
@@ -354,12 +355,43 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 			string name = textbox.Name;
 			if (textbox.Name == "eventTextbox") name = "event";
 
-			writeFile(name, textbox.Text);
+			if (Properties.Settings.Default.outputFormat == 1)
+				generateOverlayXML();
+			else
+				writeTextFile(name, textbox.Text);
 		}
 
-		private void writeFile(string file, string contents)
+		private void generateOverlayXML()
 		{
-			string path = Properties.Settings.Default.overlayPath.Trim(new Char[] {' ', '\\', '/'});
+			string path = Properties.Settings.Default.overlayPath.Trim(new Char[] { ' ', '\\', '/' });
+			createOverlayPath();
+			path += "\\overlay.xml";
+
+			try
+			{
+				using (XmlWriter writer = XmlWriter.Create(path))
+				{
+					writer.WriteStartDocument();
+					writer.WriteStartElement("Fields");
+					writer.WriteElementString("p1Name", (p1Name == null) ? "" : p1Name.Text);
+					writer.WriteElementString("p1Score", (p1Score == null) ? "" : p1Score.Text);
+					writer.WriteElementString("p2Name", (p2Name == null) ? "" : p2Name.Text);
+					writer.WriteElementString("p2Score", (p2Score == null) ? "" : p2Score.Text);
+					writer.WriteElementString("round", (round == null) ? "" : round.Text);
+					writer.WriteElementString("event", (eventTextbox == null) ? "" : eventTextbox.Text);
+					writer.WriteEndElement();
+					writer.WriteEndDocument();
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("An error occurred while writing output file: '{0}'", e);
+			}
+		}
+
+		private void createOverlayPath()
+		{
+			string path = Properties.Settings.Default.overlayPath.Trim(new Char[] { ' ', '\\', '/' });
 
 			try
 			{
@@ -372,12 +404,17 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 					return;
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				MessageBox.Show("The overlay output directory does not exist and could not be created.\n\nMore information: " + e.ToString(), "Cannot Output Overlay File", MessageBoxButton.OK, MessageBoxImage.Error);
 				return;
 			}
+		}
 
+		private void writeTextFile(string file, string contents)
+		{
+			string path = Properties.Settings.Default.overlayPath.Trim(new Char[] {' ', '\\', '/'});
+			createOverlayPath();
 			path += "\\" + file + ".txt";
 
 			try
@@ -386,7 +423,7 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("An error occurred: '{0}'", e);
+				Console.WriteLine("An error occurred while writing output file: '{0}'", e);
 			}
 		}
 
@@ -401,6 +438,12 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 		{
 			AboutView about = new AboutView();
 			about.ShowDialog();
+		}
+
+		private void endTournament_Click(object sender, RoutedEventArgs e)
+		{
+			MainViewModel mvm = Application.Current.MainWindow.DataContext as MainViewModel;
+			mvm.Context.EndTournament();
 		}
 	}
 }

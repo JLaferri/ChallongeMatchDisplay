@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace Fizzi.Applications.ChallongeVisualization.View
             //Get val
             if (value is string)
             {
-                if (!double.TryParse((string)value, out val)) return null;
+				if (!double.TryParse((string)value, NumberStyles.AllowLeadingSign, null, out val)) return null;
             }
             else
             {
@@ -28,7 +29,7 @@ namespace Fizzi.Applications.ChallongeVisualization.View
             //Get multiplier
             if (parameter is string)
             {
-                if (!double.TryParse((string)parameter, out multiplier)) return null;
+                if (!double.TryParse((string)parameter, NumberStyles.AllowLeadingSign, null, out multiplier)) return null;
             }
             else
             {

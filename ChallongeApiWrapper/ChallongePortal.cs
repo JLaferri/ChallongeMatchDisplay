@@ -99,5 +99,14 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
             var response = client.Execute(request);
             throwOnError(response);
         }
+
+        public void EndTournament(int tournamentId)
+		{
+			var request = new RestRequest(string.Format("tournaments/{0}/finalize.xml", tournamentId), Method.POST);
+			request.AddParameter("api_key", ApiKey);
+
+			var response = client.Execute<List<Participant>>(request);
+			throwOnError(response);
+		}
     }
 }
