@@ -379,7 +379,11 @@ namespace Fizzi.Applications.ChallongeVisualization.View
 					writer.WriteElementString("p2Score", (p2Score == null) ? "" : p2Score.Text);
 					writer.WriteElementString("round", (round == null) ? "" : round.Text);
 					writer.WriteElementString("event", (eventTextbox == null) ? "" : eventTextbox.Text);
-					writer.WriteEndElement();
+                    writer.WriteElementString("caster1Name", (caster1Name == null) ? "" : caster1Name.Text);
+                    writer.WriteElementString("caster2Name", (caster2Name == null) ? "" : caster2Name.Text);
+                    writer.WriteElementString("caster1Twitter", (caster1Twitter == null) ? "" : caster1Twitter.Text);
+                    writer.WriteElementString("caster2Twitter", (caster2Twitter == null) ? "" : caster2Twitter.Text);
+                    writer.WriteEndElement();
 					writer.WriteEndDocument();
 				}
 			}
