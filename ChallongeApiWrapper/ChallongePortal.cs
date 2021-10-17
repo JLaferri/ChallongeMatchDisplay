@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using RestSharp;
 using System.Xml.Linq;
+using RestSharp.Serialization.Json;
+using RestSharp.Serializers.NewtonsoftJson;
+using System.Text.Json;
+using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization;
 
 namespace Fizzi.Libraries.ChallongeApiWrapper
 {
@@ -31,16 +36,29 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
             }
         }
 
+        [DataContract(Name = "tournament")]
+        private class TournamentWrapper
+        {
+            [DataMember(Name = "tournament")]
+            public Tournament Tournament;
+        }
+
         public IEnumerable<Tournament> GetTournaments()
         {
-            var request = new RestRequest("tournaments.xml", Method.GET);
+            var request = new RestRequest("tournaments.json", Method.GET);
             request.AddParameter("api_key", ApiKey);
             if (!string.IsNullOrWhiteSpace(Subdomain)) request.AddParameter("subdomain", Subdomain);
 
-            var response = client.Execute<List<Tournament>>(request);
+            // work around challonge api bug
+            var response = client.Execute(request);
             throwOnError(response);
 
-            return response.Data;
+            var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(response.Content));
+            var ser = new DataContractJsonSerializer(typeof(List<TournamentWrapper>));
+            var tournaments = ser.ReadObject(ms) as List<TournamentWrapper>;
+            ms.Close();
+
+            return tournaments.Select(x => x.Tournament).Reverse();
         }
 
         public Tournament ShowTournament(int tournamentId)
@@ -65,15 +83,28 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
             return response.Data;
         }
 
+        [DataContract(Name ="participant")]
+        private class ParticipantWrapper
+        {
+            [DataMember(Name = "participant")]
+            public Participant Participant;
+        }
+
         public IEnumerable<Participant> GetParticipants(int tournamentId)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}/participants.xml", tournamentId), Method.GET);
+            var request = new RestRequest(string.Format("tournaments/{0}/participants.json", tournamentId), Method.GET);
             request.AddParameter("api_key", ApiKey);
 
-            var response = client.Execute<List<Participant>>(request);
+            // work around challonge api bug
+            var response = client.Execute(request);
             throwOnError(response);
 
-            return response.Data;
+            var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(response.Content));
+            var ser = new DataContractJsonSerializer(typeof(List<ParticipantWrapper>));
+            var participants = ser.ReadObject(ms) as List<ParticipantWrapper>;
+            ms.Close();
+
+            return participants.Select(x => x.Participant);
         }
 
         public void SetParticipantMisc(int tournamentId, int participantId, string misc)
