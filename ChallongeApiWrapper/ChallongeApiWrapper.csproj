@@ -3,46 +3,14 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Fizzi.Libraries.ChallongeApiWrapper</RootNamespace>
     <LangVersion>latest</LangVersion>
-    <OldToolsVersion>2.0</OldToolsVersion>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <Reference Include="RestSharp, Version=104.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ChallongeApiException.cs" />
-    <Compile Include="ChallongePortal.cs" />
-    <Compile Include="Match.cs" />
-    <Compile Include="Participant.cs" />
-    <Compile Include="SetScore.cs" />
-    <Compile Include="Tournament.cs" />
-    <Compile Include="Enums.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="RestSharp" Version="106.11.8-alpha.0.14" />
     <PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="106.11.8-alpha.0.14" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

@@ -1,7 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Fizzi.Applications.ChallongeVisualization</RootNamespace>
     <AssemblyName>Challonge Match Display</AssemblyName>
@@ -24,9 +23,8 @@
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
-    <OldToolsVersion>2.0</OldToolsVersion>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <OutputPath>bin\x64\Debug\</OutputPath>
     <CodeAnalysisLogFile>bin\Debug\PhaseviewAutomation.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
