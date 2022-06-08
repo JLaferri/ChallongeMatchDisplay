@@ -9,12 +9,12 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
 {
     public class ChallongeApiException : Exception
     {
-        public IRestResponse RestResponse { get; private set; }
+        public RestResponse RestResponse { get; private set; }
         public string[] Errors { get; private set; }
 
-        public ChallongeApiException(IRestResponse response) : this(null, response) { }
+        public ChallongeApiException(RestResponse response) : this(null, response) { }
 
-        public ChallongeApiException(string message, IRestResponse response)
+        public ChallongeApiException(string message, RestResponse response)
             : base(message)
         {
             RestResponse = response;

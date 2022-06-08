@@ -1,88 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization;
+using System;
 using System.IO;
+using System.Runtime.Serialization;
 
-namespace Fizzi.Applications.ChallongeVisualization.Model
+namespace Fizzi.Applications.ChallongeVisualization.Model;
+
+[DataContract]
+internal class VisualPersistenceManager
 {
-    [DataContract]
-    class VisualPersistenceManager
-    {
-        #region Singleton Pattern Region
-        private static volatile VisualPersistenceManager instance;
-        private static object syncRoot = new Object();
+	private static volatile VisualPersistenceManager instance;
 
-        private VisualPersistenceManager()
-        {
-            initialize();
-        }
+	private static object syncRoot = new object();
 
-        public static VisualPersistenceManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null) instance = new VisualPersistenceManager();
-                    }
-                }
+	private string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fizzi", "ChallongeMatchDisplay", "visual.xml");
 
-                return instance;
-            }
-        }
-        #endregion
+	public static VisualPersistenceManager Instance
+	{
+		get
+		{
+			if (instance == null)
+			{
+				lock (syncRoot)
+				{
+					if (instance == null)
+					{
+						instance = new VisualPersistenceManager();
+					}
+				}
+			}
+			return instance;
+		}
+	}
 
-        private string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fizzi", "ChallongeMatchDisplay", "visual.xml");
+	[DataMember]
+	public double TextSizeRatio { get; set; }
 
-        [DataMember]
-        public double TextSizeRatio { get; set; }
+	private VisualPersistenceManager()
+	{
+		initialize();
+	}
 
-        private void initialize()
-        {
-            LoadFromStorage();
-        }
+	private void initialize()
+	{
+		LoadFromStorage();
+	}
 
-        public void LoadFromStorage()
-        {
-            VisualPersistenceManager result = null;
+	public void LoadFromStorage()
+	{
+		VisualPersistenceManager visualPersistenceManager = null;
+		try
+		{
+			DataContractSerializer dataContractSerializer = new DataContractSerializer(typeof(VisualPersistenceManager));
+			using Stream stream = new FileStream(path, FileMode.Open);
+			visualPersistenceManager = (VisualPersistenceManager)dataContractSerializer.ReadObject(stream);
+		}
+		catch (Exception)
+		{
+		}
+		if (visualPersistenceManager != null)
+		{
+			TextSizeRatio = visualPersistenceManager.TextSizeRatio;
+		}
+		else
+		{
+			TextSizeRatio = 1.0;
+		}
+	}
 
-            try
-            {
-                DataContractSerializer dcs = new DataContractSerializer(typeof(VisualPersistenceManager));
-
-                using (Stream stream = new FileStream(path, FileMode.Open))
-                {
-                    result = (VisualPersistenceManager)dcs.ReadObject(stream);
-                }
-            }
-            catch (Exception) { }
-
-            if (result != null)
-            {
-                TextSizeRatio = result.TextSizeRatio;
-            }
-            else
-            {
-                TextSizeRatio = 1;
-            }
-        }
-
-        public void Save()
-        {
-            var directory = Path.GetDirectoryName(path);
-
-            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-
-            DataContractSerializer dcs = new DataContractSerializer(typeof(VisualPersistenceManager));
-
-            using (Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write))
-            {
-                dcs.WriteObject(stream, this);
-            }
-        }
-    }
+	public void Save()
+	{
+		string directoryName = Path.GetDirectoryName(path);
+		if (!Directory.Exists(directoryName))
+		{
+			Directory.CreateDirectory(directoryName);
+		}
+		DataContractSerializer dataContractSerializer = new DataContractSerializer(typeof(VisualPersistenceManager));
+		using Stream stream = new FileStream(path, FileMode.Create, FileAccess.Write);
+		dataContractSerializer.WriteObject(stream, this);
+	}
 }

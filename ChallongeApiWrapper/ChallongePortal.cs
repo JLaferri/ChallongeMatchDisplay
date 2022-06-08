@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using RestSharp;
 using System.Xml.Linq;
-using RestSharp.Serialization.Json;
+using RestSharp.Serializers.Json;
 using RestSharp.Serializers.NewtonsoftJson;
 using System.Text.Json;
 using System.Runtime.Serialization.Json;
@@ -28,7 +28,7 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
             Subdomain = subdomain;
         }
 
-        private void throwOnError(IRestResponse response)
+        private void throwOnError(RestResponse response)
         {
             if (response.ResponseStatus != ResponseStatus.Completed || response.StatusCode != System.Net.HttpStatusCode.OK)
             {
@@ -40,17 +40,17 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
         private class TournamentWrapper
         {
             [DataMember(Name = "tournament")]
-            public Tournament Tournament;
+            public ChallongeTournament Tournament;
         }
 
-        public IEnumerable<Tournament> GetTournaments()
+        public IEnumerable<ChallongeTournament> GetTournaments()
         {
-            var request = new RestRequest("tournaments.json", Method.GET);
+            var request = new RestRequest("tournaments.json", Method.Get);
             request.AddParameter("api_key", ApiKey);
             if (!string.IsNullOrWhiteSpace(Subdomain)) request.AddParameter("subdomain", Subdomain);
 
             // work around challonge api bug
-            var response = client.Execute(request);
+            var response = client.ExecuteAsync(request).GetAwaiter().GetResult();
             throwOnError(response);
 
             var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(response.Content));
@@ -61,23 +61,23 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
             return tournaments.Select(x => x.Tournament).Reverse();
         }
 
-        public Tournament ShowTournament(int tournamentId)
+        public ChallongeTournament ShowTournament(int tournamentId)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}.xml", tournamentId), Method.GET);
+            var request = new RestRequest(string.Format("tournaments/{0}.xml", tournamentId), Method.Get);
             request.AddParameter("api_key", ApiKey);
 
-            var response = client.Execute<Tournament>(request);
+            var response = client.ExecuteAsync<ChallongeTournament>(request).GetAwaiter().GetResult();
             throwOnError(response);
 
             return response.Data;
         }
 
-        public IEnumerable<Match> GetMatches(int tournamentId)
+        public IEnumerable<ChallongeMatch> GetMatches(int tournamentId)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}/matches.xml", tournamentId), Method.GET);
+            var request = new RestRequest(string.Format("tournaments/{0}/matches.xml", tournamentId), Method.Get);
             request.AddParameter("api_key", ApiKey);
 
-            var response = client.Execute<List<Match>>(request);
+            var response = client.ExecuteAsync<List<ChallongeMatch>>(request).GetAwaiter().GetResult();
             throwOnError(response);
             
             return response.Data;
@@ -87,16 +87,16 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
         private class ParticipantWrapper
         {
             [DataMember(Name = "participant")]
-            public Participant Participant;
+            public ChallongeParticipant Participant;
         }
 
-        public IEnumerable<Participant> GetParticipants(int tournamentId)
+        public IEnumerable<ChallongeParticipant> GetParticipants(int tournamentId)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}/participants.json", tournamentId), Method.GET);
+            var request = new RestRequest(string.Format("tournaments/{0}/participants.json", tournamentId), Method.Get);
             request.AddParameter("api_key", ApiKey);
 
             // work around challonge api bug
-            var response = client.Execute(request);
+            var response = client.ExecuteAsync(request).GetAwaiter().GetResult();
             throwOnError(response);
 
             var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(response.Content));
@@ -109,17 +109,17 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
 
         public void SetParticipantMisc(int tournamentId, int participantId, string misc)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}/participants/{1}.xml", tournamentId, participantId), Method.PUT);
+            var request = new RestRequest(string.Format("tournaments/{0}/participants/{1}.xml", tournamentId, participantId), Method.Put);
             request.AddParameter("api_key", ApiKey);
             request.AddParameter("participant[misc]", misc);
 
-            var response = client.Execute(request);
+            var response = client.ExecuteAsync(request).GetAwaiter().GetResult();
             throwOnError(response);
         }
 
         public void ReportMatchWinner(int tournamentId, int matchId, int winnerId, params SetScore[] scores)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}/matches/{1}.xml", tournamentId, matchId), Method.PUT);
+            var request = new RestRequest(string.Format("tournaments/{0}/matches/{1}.xml", tournamentId, matchId), Method.Put);
             request.AddParameter("api_key", ApiKey);
             request.AddParameter("match[winner_id]", winnerId);
 
@@ -127,16 +127,16 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
 
             request.AddParameter("match[scores_csv]", scores.Select(ss => ss.ToString()).Aggregate((one, two) => string.Format("{0},{1}", one, two)));
 
-            var response = client.Execute(request);
+            var response = client.ExecuteAsync(request).GetAwaiter().GetResult();
             throwOnError(response);
         }
 
         public void EndTournament(int tournamentId)
 		{
-			var request = new RestRequest(string.Format("tournaments/{0}/finalize.xml", tournamentId), Method.POST);
+			var request = new RestRequest(string.Format("tournaments/{0}/finalize.xml", tournamentId), Method.Post);
 			request.AddParameter("api_key", ApiKey);
 
-			var response = client.Execute<List<Participant>>(request);
+			var response = client.ExecuteAsync<List<ChallongeParticipant>>(request).GetAwaiter().GetResult();
 			throwOnError(response);
 		}
     }

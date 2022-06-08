@@ -1,48 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 
-namespace Fizzi.Applications.ChallongeVisualization.Model
+namespace Fizzi.Applications.ChallongeVisualization.Model;
+
+internal class ParticipantMiscProperties
 {
-    class ParticipantMiscProperties
-    {
-        public DateTime? UtcTimeMissing { get; private set; }
-        public DateTime? UtcTimeMatchAssigned { get; private set; }
-        public string StationAssignment { get; private set; }
+	public DateTime? UtcTimeMissing { get; private set; }
 
-        private ParticipantMiscProperties() { }
+	public DateTime? UtcTimeMatchAssigned { get; private set; }
 
-        public ParticipantMiscProperties(DateTime? utcTimeMissing, DateTime? utcTimeMatchAssigned, string stationAssignment)
-        {
-            UtcTimeMissing = utcTimeMissing;
-            UtcTimeMatchAssigned = utcTimeMatchAssigned;
-            StationAssignment = stationAssignment;
-        }
+	public string StationAssignment { get; private set; }
 
-        public static ParticipantMiscProperties Parse(string miscString)
-        {
-            var result = new ParticipantMiscProperties();
+	private ParticipantMiscProperties()
+	{
+	}
 
-            var splitString = miscString.Split(';');
+	public ParticipantMiscProperties(DateTime? utcTimeMissing, DateTime? utcTimeMatchAssigned, string stationAssignment)
+	{
+		UtcTimeMissing = utcTimeMissing;
+		UtcTimeMatchAssigned = utcTimeMatchAssigned;
+		StationAssignment = stationAssignment;
+	}
 
-            if (splitString.Length == 3)
-            {
-                DateTime dateTimeBuffer;
+	public static ParticipantMiscProperties Parse(string miscString)
+	{
+		ParticipantMiscProperties participantMiscProperties = new ParticipantMiscProperties();
+		string[] array = miscString.Split(';');
+		if (array.Length == 3)
+		{
+			if (DateTime.TryParse(array[0], out var result))
+			{
+				participantMiscProperties.UtcTimeMissing = result;
+			}
+			if (DateTime.TryParse(array[1], out result))
+			{
+				participantMiscProperties.UtcTimeMatchAssigned = result;
+			}
+			if (array[2] != "{NULL}")
+			{
+				participantMiscProperties.StationAssignment = array[2];
+			}
+		}
+		return participantMiscProperties;
+	}
 
-                if (DateTime.TryParse(splitString[0], out dateTimeBuffer)) result.UtcTimeMissing = dateTimeBuffer;
-                if (DateTime.TryParse(splitString[1], out dateTimeBuffer)) result.UtcTimeMatchAssigned = dateTimeBuffer;
-                if (splitString[2] != "{NULL}") result.StationAssignment = splitString[2];
-            }
-
-            return result;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0};{1};{2}", UtcTimeMissing.HasValue ? UtcTimeMissing.ToString() : "{NULL}",
-                UtcTimeMatchAssigned.HasValue ? UtcTimeMatchAssigned.ToString() : "{NULL}",
-                StationAssignment != null ? StationAssignment.ToString() : "{NULL}");
-        }
-    }
+	public override string ToString()
+	{
+		return string.Format("{0};{1};{2}", UtcTimeMissing.HasValue ? UtcTimeMissing.ToString() : "{NULL}", UtcTimeMatchAssigned.HasValue ? UtcTimeMatchAssigned.ToString() : "{NULL}", (StationAssignment != null) ? StationAssignment.ToString() : "{NULL}");
+	}
 }

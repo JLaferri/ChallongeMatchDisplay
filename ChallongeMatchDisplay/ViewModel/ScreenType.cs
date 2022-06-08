@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Fizzi.Applications.ChallongeVisualization.ViewModel;
 
-namespace Fizzi.Applications.ChallongeVisualization.ViewModel
+internal enum ScreenType
 {
-    enum ScreenType
-    {
-        ApiKey,
-        TournamentSelection,
-        PendingMatchView
-    }
+	ApiKey,
+	ChallongeTournamentSelection,
+	ChallongePendingMatchView,
+	SmashggEventPhaseGroupSelection,
+	SmashggPendingMatchView
 }

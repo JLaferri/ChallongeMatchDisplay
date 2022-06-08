@@ -1,0 +1,394 @@
+﻿<UserControl x:Class="Fizzi.Applications.ChallongeVisualization.View.SmashggMatchDisplayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
+			 xmlns:Engine="clr-namespace:PlayGround.Engine.Controls;assembly=SandBox"
+			 xmlns:Emitter="clr-namespace:PlayGround.Engine.Emitters;assembly=SandBox"
+			 xmlns:Force="clr-namespace:PlayGround.Engine.Forces;assembly=SandBox"
+			 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300"
+             Name="TopLevelControl" IsHitTestVisible="True">
+    <UserControl.Resources>
+        <sys:Int32 x:Key="Negative150">-150</sys:Int32>
+        <CollectionViewSource x:Key="Matches" Source="{Binding SmashggDisplayMatches}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="MatchDisplayType" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Match.RoundOrder" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Match.IsWinners" Direction="Ascending" />
+                <scm:SortDescription PropertyName="Match.Identifier" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <lview:MultiplyDoubleConverter x:Key="MultiplyDoubleConv" />
+        <lview:ProgressToSizeConverter x:Key="ProgressToSizeConv" />
+        <lview:TimeSpanToShortStringConverter x:Key="TimeSpanToShortStringConv" />
+        <lview:TimeSpanToBrushConverter x:Key="TimeSpanToBrushConv" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Margin="12">
+            <Grid IsSharedSizeScope="True">
+                <FrameworkElement.Resources>
+                    <ResourceDictionary>
+                        <Style x:Key="FontBase40" TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, ConverterParameter=40, Converter={StaticResource MultiplyDoubleConv}}" />
+                        </Style>
+                        <Style x:Key="FontBase22" TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, ConverterParameter=22, Converter={StaticResource MultiplyDoubleConv}}" />
+                        </Style>
+                        <Style x:Key="FontBase20" TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, ConverterParameter=20, Converter={StaticResource MultiplyDoubleConv}}" />
+                        </Style>
+                        <Style x:Key="FontBase18" TargetType="{x:Type TextBlock}">
+                            <Setter Property="FontSize" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, ConverterParameter=18, Converter={StaticResource MultiplyDoubleConv}}" />
+                        </Style>
+                    </ResourceDictionary>
+                </FrameworkElement.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Margin="3" Background="#FF6495ED">
+                            <TextBlock Margin="6" Style="{StaticResource FontBase22}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="{Binding Context.Tournament.Name}" />
+                        </Border>
+                        <Button Grid.Column="1" Margin="3" Cursor="Hand" FocusVisualStyle="{x:Null}" Click="TOButton_Click">
+                            <Control.Template>
+                                <ControlTemplate>
+                                    <Border Background="#FF6495ED">
+                                        <TextBlock Margin="6" Style="{StaticResource FontBase22}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="TO" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Control.Template>
+                        </Button>
+                        <Button Grid.Column="2" Margin="3" Cursor="Hand" Command="{Binding SmashggBack}" FocusVisualStyle="{x:Null}" Click="BackButton_Click">
+                            <Control.Template>
+                                <ControlTemplate>
+                                    <Border Background="#FF6495ED">
+                                        <TextBlock Margin="6" Style="{StaticResource FontBase22}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="Back" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Control.Template>
+                        </Button>
+                    </Grid>
+                    <Grid Name="HeaderRowGrid" Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Round" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Code" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Station" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Timer" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="ScrollBar" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Margin="3" Background="#FF696969">
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="Round" />
+                        </Border>
+                        <Border Grid.Column="1" Margin="3" Background="#FF696969">
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="Code" />
+                        </Border>
+                        <Border Grid.Column="2" Margin="3" Background="#FF696969">
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="Player 1" />
+                        </Border>
+                        <Border Grid.Column="3" Margin="3" Background="#FF696969">
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="Player 2" />
+                        </Border>
+                        <Border Grid.Column="4" Margin="3" Background="#FF696969">
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="Station" />
+                        </Border>
+                        <Border Grid.Column="5" Margin="3" Background="#FF696969">
+                            <TextBlock Margin="6" Style="{StaticResource FontBase20}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="Timer" />
+                        </Border>
+                    </Grid>
+                </Grid>
+                <StackPanel Name="Winners" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                    <TextBlock Name="winner1" RenderTransformOrigin="0.5, 0.5" Margin="10" Style="{StaticResource FontBase40}" FontWeight="Bold" Text="Winner" HorizontalAlignment="Center" Foreground="#FF333333">
+            <UIElement.RenderTransform>
+              <ScaleTransform />
+            </UIElement.RenderTransform>
+            <FrameworkElement.Triggers>
+              <EventTrigger RoutedEvent="TextBlock.Loaded">
+                <BeginStoryboard>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="winner1" Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)" From="1.2" To="1.0" Duration="0:0:0.5" AutoReverse="True" RepeatBehavior="Forever">
+                      <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseIn" />
+                      </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                    <DoubleAnimation Storyboard.TargetName="winner1" Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" From="1.2" To="1.0" Duration="0:0:0.5" AutoReverse="True" RepeatBehavior="Forever">
+                      <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseIn" />
+                      </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                  </Storyboard>
+                </BeginStoryboard>
+              </EventTrigger>
+            </FrameworkElement.Triggers>
+                    </TextBlock>
+                    <TextBlock Name="winner2" Margin="2" Style="{StaticResource FontBase22}" FontWeight="Bold" Text="Second" HorizontalAlignment="Center" Foreground="#FF444444" />
+                    <TextBlock Name="winner3" Margin="2" Style="{StaticResource FontBase22}" FontWeight="Bold" Text="Third" HorizontalAlignment="Center" Foreground="#FF555555" />
+                    <TextBlock Name="winner4" Margin="2" Style="{StaticResource FontBase22}" FontWeight="Bold" Text="Fourth" HorizontalAlignment="Center" Foreground="#FF666666" />
+                </StackPanel>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
+                    <Control.Template>
+                        <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="ScrollBar" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ScrollContentPresenter Name="PART_ScrollContentPresenter" Grid.Column="0" Grid.Row="0" />
+                                <ScrollBar Name="PART_VerticalScrollBar" Orientation="Vertical" Grid.Column="1" Grid.Row="0" Value="{TemplateBinding VerticalOffset}" Maximum="{TemplateBinding ScrollableHeight}" Minimum="0" ViewportSize="{TemplateBinding ViewportHeight}" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}">
+                                    <Control.Template>
+                                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition MaxHeight="0" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition MaxHeight="0" />
+                                                </Grid.RowDefinitions>
+                                                <Border Grid.RowSpan="3" CornerRadius="5" Background="#FF6495ED" />
+                                                <Track Name="PART_Track" Grid.Row="1" IsDirectionReversed="True">
+                                                    <Track.Thumb>
+                                                        <Thumb>
+                                                            <Control.Template>
+                                                                <ControlTemplate>
+                                                                    <Border Margin="3" CornerRadius="4" Background="#FFF5F5F5" Cursor="Hand" />
+                                                                </ControlTemplate>
+                                                            </Control.Template>
+                                                        </Thumb>
+                                                    </Track.Thumb>
+                                                </Track>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Control.Template>
+                                </ScrollBar>
+                            </Grid>
+                        </ControlTemplate>
+                    </Control.Template>
+                    <ItemsControl ItemsSource="{Binding Source={StaticResource Matches}}" FocusVisualStyle="{x:Null}">
+                        <FrameworkElement.Resources>
+                            <ResourceDictionary>
+                                <Style x:Key="StandardColorToggleBorder" TargetType="{x:Type Border}">
+                                    <Setter Property="Background" Value="#FF808080" />
+                                    <Style.Triggers>
+                                        <DataTrigger Value="True" Binding="{Binding IsMatchInProgress}">
+                                            <Setter Property="Background" Value="#FF6A5ACD" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ResourceDictionary>
+                        </FrameworkElement.Resources>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <FrameworkElement.Style>
+                                        <Style TargetType="{x:Type Grid}">
+                                            <Style.Triggers>
+                                                <DataTrigger Value="True" Binding="{Binding Match.IsMatchComplete}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Value="0" Binding="{Binding Match.EntrantCount}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Value="True" Binding="{Binding Match.IsMatchInProgress}" />
+                                                        <Condition Value="1" Binding="{Binding MatchDisplayType}" />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </MultiDataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Value="False" Binding="{Binding Match.IsMatchInProgress}" />
+                                                        <Condition Value="0" Binding="{Binding MatchDisplayType}" />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </FrameworkElement.Style>
+                                    <Grid DataContext="{Binding Match}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Round" />
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Code" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Station" />
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="Timer" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Margin="3" Style="{StaticResource StandardColorToggleBorder}">
+                                            <TextBlock Margin="6" Style="{StaticResource FontBase18}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="{Binding RoundName}" />
+                                        </Border>
+                                        <Border Grid.Column="1" Margin="3" Style="{StaticResource StandardColorToggleBorder}">
+                                            <TextBlock Margin="6" Style="{StaticResource FontBase18}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="{Binding Identifier}" />
+                                        </Border>
+                                        <Border Grid.Column="2" Margin="3">
+                                            <FrameworkElement.Style>
+                                                <Style TargetType="{x:Type Border}">
+                                                    <Setter Property="Background" Value="#FF6A5ACD" />
+                                                </Style>
+                                            </FrameworkElement.Style>
+                                            <Viewbox StretchDirection="DownOnly">
+                                                <TextBlock Margin="6" IsHitTestVisible="False" FontWeight="Bold" HorizontalAlignment="Center">
+                          <FrameworkElement.Style>
+                            <Style BasedOn="{StaticResource FontBase18}" TargetType="{x:Type TextBlock}">
+                              <Setter Property="Foreground" Value="#FFFFFFFF" />
+                              <Setter Property="FontWeight" Value="Bold" />
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Entrant1}" Value="{x:Null}">
+                                  <Setter Property="Foreground" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                                                    <TextBlock.Text>
+                                                        <PriorityBinding>
+                                                            <Binding Path="Entrant1.DisplayName" />
+                                                            <Binding Path="Entrant1SourceString" />
+                                                        </PriorityBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </Viewbox>
+                                        </Border>
+                                        <Border Grid.Column="3" Margin="3">
+                                            <FrameworkElement.Style>
+                                                <Style TargetType="{x:Type Border}">
+                                                    <Setter Property="Background" Value="#FF6A5ACD" />
+                                                </Style>
+                                            </FrameworkElement.Style>
+                                            <Viewbox StretchDirection="DownOnly">
+                                                <TextBlock Margin="6" IsHitTestVisible="False" FontWeight="Bold" HorizontalAlignment="Center">
+                          <FrameworkElement.Style>
+                            <Style BasedOn="{StaticResource FontBase18}" TargetType="{x:Type TextBlock}">
+                              <Setter Property="Foreground" Value="#FFFFFFFF" />
+                              <Setter Property="FontWeight" Value="Bold" />
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Entrant2}" Value="{x:Null}">
+                                  <Setter Property="Foreground" Value="#FFD3D3D3" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </FrameworkElement.Style>
+                                                    <TextBlock.Text>
+                                                        <PriorityBinding>
+                                                            <Binding Path="Entrant2.DisplayName" />
+                                                            <Binding Path="Entrant2SourceString" />
+                                                        </PriorityBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </Viewbox>
+                                        </Border>
+                                        <Border Grid.Column="4" Margin="3" Style="{StaticResource StandardColorToggleBorder}">
+                                            <TextBlock Margin="6" Style="{StaticResource FontBase18}" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Text="{Binding StationAssignment}" />
+                                        </Border>
+                                        <Border Grid.Column="5" Margin="3">
+                                            <FrameworkElement.Style>
+                                                <Style TargetType="{x:Type Border}">
+                                                    <Setter Property="Background" Value="#FF808080" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Value="True" Binding="{Binding IsMatchInProgress}">
+                                                            <Setter Property="Background" Value="{Binding TimeSinceStarted, Converter={StaticResource TimeSpanToBrushConv}}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </FrameworkElement.Style>
+                                            <TextBlock Margin="6" IsHitTestVisible="False" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center">
+                        <FrameworkElement.Style>
+                          <Style BasedOn="{StaticResource FontBase18}" TargetType="{x:Type TextBlock}">
+                            <Setter Property="Text" Value="{Binding TimeSinceCreated, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                            <Style.Triggers>
+                              <DataTrigger Value="True" Binding="{Binding IsMatchInProgress}">
+                                <Setter Property="Text" Value="{Binding TimeSinceStarted, Converter={StaticResource TimeSpanToShortStringConv}}" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </FrameworkElement.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <Slider Grid.Row="3" Margin="3" Minimum="0.5" Maximum="2" SmallChange="0.1" LargeChange="0.2" TickFrequency="0.05" IsSnapToTickEnabled="True" Orientation="Horizontal" Value="{Binding ElementName=TopLevelControl, Path=TextSizeRatio}" FocusVisualStyle="{x:Null}">
+                    <Control.Template>
+                        <ControlTemplate TargetType="{x:Type Slider}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition MaxWidth="0" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition MaxWidth="0" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.ColumnSpan="3" VerticalAlignment="Center" Height="10" CornerRadius="5" Background="#FF6495ED" />
+                                <Track Name="PART_Track" Grid.Column="1">
+                                    <Track.Thumb>
+                                        <Thumb>
+                                            <Control.Template>
+                                                <ControlTemplate>
+                                                    <Ellipse Margin="3" Height="18" Width="18" Fill="#FFF5F5F5" StrokeThickness="2" Stroke="#FF6495ED" Cursor="Hand" />
+                                                </ControlTemplate>
+                                            </Control.Template>
+                                        </Thumb>
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Control.Template>
+                </Slider>
+            </Grid>
+        </Border>
+        <TextBlock Grid.Row="1" Margin="12,0,12,12" TextWrapping="Wrap" FontSize="18" Foreground="#FFFF0000" Text="{Binding Context.ErrorMessage}">
+      <FrameworkElement.Style>
+        <Style TargetType="{x:Type TextBlock}">
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding Context.ErrorMessage}" Value="{x:Null}">
+              <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </FrameworkElement.Style>
+        </TextBlock>
+        <Engine:ParticleSystem Name="MyParticleSystem" RenderTransformOrigin="0.5, 0.5" Background="#00FFFFFF" Panel.ZIndex="-10" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-30,-80,0,0">
+            <UIElement.RenderTransform>
+                <ScaleTransform CenterY="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=30}" ScaleX="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=1}" ScaleY="{Binding ElementName=TopLevelControl, Path=TextSizeRatio, Converter={StaticResource MultiplyDoubleConv}, ConverterParameter=1}" />
+            </UIElement.RenderTransform>
+            <Engine:ParticleSystem.Emitters>
+                <Emitter:PointEmitter MaxParticles="10" MinPositionOffsetY="-5" MaxPositionOffsetY="5" MinPositionOffsetX="-150" MaxPositionOffsetX="150" MinHorizontalVelocity="-200" MaxHorizontalVelocity="200" MinVerticalVelocity="-300" MaxVerticalVelocity="-200" StartOpacity="0.5" EndOpacity="0.5" MinLifeSpan="10" MaxLifeSpan="10" MinMass="20" MaxMass="50.0" MinParticleWidth="10" MaxParticleWidth="20" MinParticleHeight="10" MaxParticleHeight="20">
+                    <Emitter:Emitter.ColorKeyFrames>
+                        <ColorKeyFrameCollection>
+                            <LinearColorKeyFrame Value="Transparent" KeyTime="0%" />
+                            <LinearColorKeyFrame Value="DarkRed" KeyTime="2%" />
+                        </ColorKeyFrameCollection>
+                    </Emitter:Emitter.ColorKeyFrames>
+                </Emitter:PointEmitter>
+            </Engine:ParticleSystem.Emitters>
+            <Engine:ParticleSystem.Gravity>
+                <Vector X="0" Y="300" />
+            </Engine:ParticleSystem.Gravity>
+        </Engine:ParticleSystem>
+    </Grid>
+</UserControl>

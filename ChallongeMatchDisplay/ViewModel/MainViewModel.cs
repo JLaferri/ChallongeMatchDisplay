@@ -1,250 +1,447 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Windows;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using Fizzi.Libraries.ChallongeApiWrapper;
+using System.Threading;
 using System.Windows.Input;
 using Fizzi.Applications.ChallongeVisualization.Common;
-using System.ComponentModel;
 using Fizzi.Applications.ChallongeVisualization.Model;
-using System.Net;
-using System.Reactive.Linq;
-using System.IO;
-using RestSharp;
-using System.Collections.ObjectModel;
 using Fizzi.Applications.ChallongeVisualization.Properties;
-using System.Xml.Linq;
-using Fizzi.Applications.ChallongeVisualization.View;
+using Fizzi.Libraries.ChallongeApiWrapper;
+using Fizzi.Libraries.SmashggApiWrapper;
 
-namespace Fizzi.Applications.ChallongeVisualization.ViewModel
+namespace Fizzi.Applications.ChallongeVisualization.ViewModel;
+
+internal class MainViewModel : INotifyPropertyChanged
 {
-    class MainViewModel : INotifyPropertyChanged
-    {
-        public string Version { get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); } }
+	private string _mostRecentVersion;
 
-        private string _mostRecentVersion;
-        public string MostRecentVersion { get { return _mostRecentVersion; } set { this.RaiseAndSetIfChanged("MostRecentVersion", ref _mostRecentVersion, value, PropertyChanged); } }
+	private ScreenType _currentScreen;
 
-        private ScreenType _currentScreen;
-        public ScreenType CurrentScreen { get { return _currentScreen; } set { this.RaiseAndSetIfChanged("CurrentScreen", ref _currentScreen, value, PropertyChanged); } }
+	private string _challongeApiKey;
 
-        private string _apiKey;
-        public string ApiKey { get { return _apiKey; } set { this.RaiseAndSetIfChanged("ApiKey", ref _apiKey, value, PropertyChanged); } }
+	private string _challongeSubdomain;
 
-        private string _subdomain;
-        public string Subdomain { get { return _subdomain; } set { this.RaiseAndSetIfChanged("Subdomain", ref _subdomain, value, PropertyChanged); } }
+	private string _smashggApiToken;
 
-        public ChallongePortal Portal { get; private set; }
+	private string _smashggSlug;
 
-        public Tournament[] TournamentCollection { get; private set; }
+	private List<ChallongeDisplayMatch> _challongeDisplayMatches;
 
-        private List<DisplayMatch> _displayMatches;
-        public List<DisplayMatch> DisplayMatches { get { return _displayMatches; } set { this.RaiseAndSetIfChanged("DisplayMatches", ref _displayMatches, value, PropertyChanged); } }
+	private List<SmashggDisplayMatch> _smashggDisplayMatches;
 
-        private Tournament _selectedTournament;
-        public Tournament SelectedTournament { get { return _selectedTournament; } set { this.RaiseAndSetIfChanged("SelectedTournament", ref _selectedTournament, value, PropertyChanged); } }
+	private ChallongeTournament _challongeSelectedTournament;
 
-        public TournamentContext Context { get; private set; }
+	private Tuple<long, long, long> _smashggSelectedEventPhaseGroupData;
 
-        private PropertyChangedEventHandler matchesChangedHandler;
+	private PropertyChangedEventHandler matchesChangedHandler;
 
-        private bool _newVersionAvailable;
-        public bool NewVersionAvailable { get { return _newVersionAvailable; } set { this.RaiseAndSetIfChanged("NewVersionAvailable", ref _newVersionAvailable, value, PropertyChanged); } }
+	private bool _newVersionAvailable;
 
-        private bool _isBusy;
-        public bool IsBusy { get { return _isBusy; } set { this.RaiseAndSetIfChanged("IsBusy", ref _isBusy, value, PropertyChanged); } }
+	private bool _isBusy;
 
-        private bool _isVersionOutdatedVisible;
-        public bool IsVersionOutdatedVisible { get { return _isVersionOutdatedVisible; } set { this.RaiseAndSetIfChanged("IsVersionOutdatedVisible", ref _isVersionOutdatedVisible, value, PropertyChanged); } }
+	private bool _isVersionOutdatedVisible;
 
-        private string _errorMessage;
-        public string ErrorMessage { get { return _errorMessage; } set { this.RaiseAndSetIfChanged("ErrorMessage", ref _errorMessage, value, PropertyChanged); } }
+	private string _challongeErrorMessage;
 
-        public ICommand NextCommand { get; private set; }
-        public ICommand Back { get; private set; }
+	private string _smashggErrorMessage;
 
-        public ICommand IgnoreVersionNotification { get; private set; }
+	public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        public string ThreadUrl { get { return "http://smashboards.com/threads/challonge-match-display-application-helping-tournaments-run-faster.358186/"; } }
-
-        public OrganizerViewModel OrgViewModel { get; private set; }
-        
-        public MainViewModel()
-        {
-            CurrentScreen = ScreenType.ApiKey;
-
-			ApiKey = Properties.Settings.Default.challonge_apikey;
-			Subdomain = Properties.Settings.Default.challonge_subdomain;
-
-			//Observable.Start(() =>
-			//{
-			//    try
-			//    {
-			//        //I'm considering doing an http request to smashboards to find if a new version is released. I think smashboard's anti-DDOS protection is preventing it from working
-			//        WebRequest request = WebRequest.Create(ThreadUrl);
-			//        request.Credentials = CredentialCache.DefaultCredentials;
-
-			//        WebResponse response = request.GetResponse();
-			//        if (((HttpWebResponse)response).StatusDescription == "OK")
-			//        {
-			//            Stream dataStream = response.GetResponseStream();
-			//            StreamReader reader = new StreamReader(dataStream);
-			//            string responseFromServer = reader.ReadToEnd();
-			//            reader.Close();
-			//        }
-			//        response.Close();
-			//    }
-			//    catch { /* ignore */ }
-			//});
-
-			//Modify ViewModel state when an action is initiated
-			Action startAction = () =>
-            {
-                ErrorMessage = null;
-                IsBusy = true;
-            };
-
-            //Modify ViewModel state when an action is completed
-            Action endAction = () =>
-            {
-                IsBusy = false;
-            };
-
-            //Modify ViewModel state when an action comes back with an exception
-            Action<Exception> errorHandler = ex =>
-            {
-                if (ex.InnerException is ChallongeApiException)
-                {
-                    var cApiEx = (ChallongeApiException)ex.InnerException;
-
-                    if (cApiEx.Errors != null) ErrorMessage = cApiEx.Errors.Aggregate((one, two) => one + "\r\n" + two);
-                    else ErrorMessage = string.Format("Error with ResponseStatus \"{0}\" and StatusCode \"{1}\". {2}", cApiEx.RestResponse.ResponseStatus,
-                        cApiEx.RestResponse.StatusCode, cApiEx.RestResponse.ErrorMessage);
-                }
-                else
-                {
-                    ErrorMessage = ex.NewLineDelimitedMessages();
-                }
-
-                IsBusy = false;
-            };
-
-            var dispatcher = System.Threading.SynchronizationContext.Current;
-
-            //Handle next button press
-            NextCommand = Command.CreateAsync(() => true, () =>
-            {
-                switch (CurrentScreen)
-                {
-                    case ScreenType.ApiKey:
-                        var subdomain = string.IsNullOrWhiteSpace(Subdomain) ? null : Subdomain;
-                        Portal = new ChallongePortal(ApiKey, subdomain);
-
-                        //Load list of tournaments that match apikey/subdomain
-                        TournamentCollection = Portal.GetTournaments().OrderByDescending(t => t.CreatedAt).ToArray();
-
-                        try
-                        {
-                            //This is a silly method for checking whether a new application version exists without me having my own website.
-                            //I manage the most recent version number in the description of a tournament hosted on challonge. This code fetches that number
-                            var versionCheckPortal = new ChallongePortal(ApiKey, "fizzitestorg");
-                            MostRecentVersion = versionCheckPortal.GetTournaments().Where(t => t.Name == "CMDVersionTest").Select(t => 
-                            {
-                                //Modifying the description seems to put some html formatting into the result. This filters the description for
-                                //just the version number by itself
-                                var versionResult = string.Concat(t.Description.Where(c => char.IsDigit(c) || c == '.'));
-                                return versionResult;
-                            }).First();
-
-                            //Check both version numbers to determine if current version is older than recent version
-                            var versionCompareResult = Version.Split('.').Zip(MostRecentVersion.Split('.'), (v, mrv) =>
-                            {
-                                return int.Parse(v).CompareTo(int.Parse(mrv));
-                            }).FirstOrDefault(i => i != 0);
-
-                            //If app version is older than most recent version, show message
-                            IsVersionOutdatedVisible = versionCompareResult < 0;
-                        }
-                        catch (Exception)
-                        {
-                            //If version check fails simply ignore the problem and move on
-                            System.Diagnostics.Debug.WriteLine("Version check failed.");
-                        }
-
-                        break;
-                    case ScreenType.TournamentSelection:
-                        if (Context != null) Context.Dispose();
-                        if (matchesChangedHandler != null) Context.Tournament.PropertyChanged -= matchesChangedHandler;
-
-                        //Create tournament context from selected tournament
-                        Context = new TournamentContext(Portal, SelectedTournament.Id);
-                        Context.StartSynchronization(TimeSpan.FromMilliseconds(500), 6);
-
-                        //Create TO View Model
-                        OrgViewModel = new OrganizerViewModel(this, dispatcher);
-
-                        //Load up matches into display matches. This is done to allow ordering of assigned matches over unassigned matches without having to refresh the view
-                        DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Assigned))
-                            .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
-
-                        //This handler is used to keep matches display matches in sync with tournament context matches. If the matches in the context change, re-generate the display matches
-                        matchesChangedHandler = new PropertyChangedEventHandler((sender, e) =>
-                        {
-                            if (e.PropertyName == "Matches")
-                            {
-                                if (Context.Tournament.Matches == null) DisplayMatches = null;
-                                else
-                                {
-                                    DisplayMatches = Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Assigned))
-                                        .Concat(Context.Tournament.Matches.Select(kvp => new DisplayMatch(OrgViewModel, kvp.Value, DisplayMatch.DisplayType.Unassigned))).ToList();
-                                }
-                            }
-
-							if (e.PropertyName == "ProgressMeter")
-							{
-								if (Context.Tournament.ProgressMeter == 100)
-								{
-
-								}
-							}
-                        });
-                        Context.Tournament.PropertyChanged += matchesChangedHandler;
-
-                        break;
-                }
-
-                CurrentScreen = (ScreenType)((int)CurrentScreen + 1);
-            }, startAction, endAction, errorHandler);
-
-            Back = Command.CreateAsync(() => true, () =>
-            {
-                switch (CurrentScreen)
-                {
-                    case ScreenType.TournamentSelection:
-                        ApiKey = Properties.Settings.Default.challonge_apikey;
-                        break;
-                    case ScreenType.PendingMatchView:
-                        if (OrgViewModel != null)
-                        {
-                            OrgViewModel.Dispose();
-                            OrgViewModel = null;
-						}
-						break;
-                }
-                CurrentScreen = (ScreenType)((int)CurrentScreen - 1);
-            }, startAction, endAction, errorHandler);
-
-            IgnoreVersionNotification = Command.Create(() => true, () => IsVersionOutdatedVisible = false);
-
-
-			if (ApiKey != "")
-			{
-				NextCommand.Execute(null);
-			}
+	public string MostRecentVersion
+	{
+		get
+		{
+			return _mostRecentVersion;
 		}
+		set
+		{
+			this.RaiseAndSetIfChanged("MostRecentVersion", ref _mostRecentVersion, value, this.PropertyChanged);
+		}
+	}
 
-        public event PropertyChangedEventHandler PropertyChanged;
-    }
+	public ScreenType CurrentScreen
+	{
+		get
+		{
+			return _currentScreen;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("CurrentScreen", ref _currentScreen, value, this.PropertyChanged);
+		}
+	}
+
+	public string ChallongeApiKey
+	{
+		get
+		{
+			return _challongeApiKey;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("ChallongeApiKey", ref _challongeApiKey, value, this.PropertyChanged);
+		}
+	}
+
+	public string ChallongeSubdomain
+	{
+		get
+		{
+			return _challongeSubdomain;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("Subdomain", ref _challongeSubdomain, value, this.PropertyChanged);
+		}
+	}
+
+	public string SmashggApiToken
+	{
+		get
+		{
+			return _smashggApiToken;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("SmashggApiKey", ref _smashggApiToken, value, this.PropertyChanged);
+		}
+	}
+
+	public string SmashggSlug
+	{
+		get
+		{
+			return _smashggSlug;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("SmashggSlug", ref _smashggSlug, value, this.PropertyChanged);
+		}
+	}
+
+	public ChallongePortal MyChallongePortal { get; private set; }
+
+	public SmashggPortal MySmashggPortal { get; private set; }
+
+	public ChallongeTournament[] ChallongeTournamentCollection { get; private set; }
+
+	public SmashggTournament[] SmashggTournamentCollection { get; private set; }
+
+	public List<ChallongeDisplayMatch> ChallongeDisplayMatches
+	{
+		get
+		{
+			return _challongeDisplayMatches;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("ChallongeDisplayMatches", ref _challongeDisplayMatches, value, this.PropertyChanged);
+		}
+	}
+
+	public List<SmashggDisplayMatch> SmashggDisplayMatches
+	{
+		get
+		{
+			return _smashggDisplayMatches;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("SmashggDisplayMatches", ref _smashggDisplayMatches, value, this.PropertyChanged);
+		}
+	}
+
+	public ChallongeTournament ChallongeSelectedTournament
+	{
+		get
+		{
+			return _challongeSelectedTournament;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("ChallongeSelectedTournament", ref _challongeSelectedTournament, value, this.PropertyChanged);
+		}
+	}
+
+	public Tuple<long, long, long> SmashggSelectedEventPhaseGroupData
+	{
+		get
+		{
+			return _smashggSelectedEventPhaseGroupData;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("SmashggSelectedEventPhaseGroupData", ref _smashggSelectedEventPhaseGroupData, value, this.PropertyChanged);
+		}
+	}
+
+	public ITournamentContext Context { get; private set; }
+
+	public bool NewVersionAvailable
+	{
+		get
+		{
+			return _newVersionAvailable;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("NewVersionAvailable", ref _newVersionAvailable, value, this.PropertyChanged);
+		}
+	}
+
+	public bool IsBusy
+	{
+		get
+		{
+			return _isBusy;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("IsBusy", ref _isBusy, value, this.PropertyChanged);
+		}
+	}
+
+	public bool IsVersionOutdatedVisible
+	{
+		get
+		{
+			return _isVersionOutdatedVisible;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("IsVersionOutdatedVisible", ref _isVersionOutdatedVisible, value, this.PropertyChanged);
+		}
+	}
+
+	public string ChallongeErrorMessage
+	{
+		get
+		{
+			return _challongeErrorMessage;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("ErrorMessage", ref _challongeErrorMessage, value, this.PropertyChanged);
+		}
+	}
+
+	public string SmashggErrorMessage
+	{
+		get
+		{
+			return _smashggErrorMessage;
+		}
+		set
+		{
+			this.RaiseAndSetIfChanged("ErrorMessage", ref _smashggErrorMessage, value, this.PropertyChanged);
+		}
+	}
+
+	public ICommand ChallongeNextCommand { get; private set; }
+
+	public ICommand SmashggNextCommand { get; private set; }
+
+	public ICommand ChallongeBack { get; private set; }
+
+	public ICommand SmashggBack { get; private set; }
+
+	public ICommand IgnoreVersionNotification { get; private set; }
+
+	public string ThreadUrl => "http://smashboards.com/threads/challonge-match-display-application-helping-tournaments-run-faster.358186/";
+
+	public IOrganizerViewModel OrgViewModel { get; private set; }
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public MainViewModel()
+	{
+		CurrentScreen = ScreenType.ApiKey;
+		ChallongeApiKey = Settings.Default.challonge_apikey;
+		ChallongeSubdomain = Settings.Default.challonge_subdomain;
+		SmashggApiToken = Settings.Default.smashgg_apitoken;
+		SmashggSlug = Settings.Default.smashgg_slug;
+		Action onStart = delegate
+		{
+			ChallongeErrorMessage = null;
+			SmashggErrorMessage = null;
+			IsBusy = true;
+		};
+		Action onCompletion = delegate
+		{
+			IsBusy = false;
+		};
+		Action<Exception> onError = delegate(Exception ex)
+		{
+			if (ex.InnerException is ChallongeApiException)
+			{
+				ChallongeApiException ex4 = (ChallongeApiException)ex.InnerException;
+				if (ex4.Errors != null)
+				{
+					ChallongeErrorMessage = ex4.Errors.Aggregate((string one, string two) => one + "\r\n" + two);
+				}
+				else
+				{
+					ChallongeErrorMessage = $"Error with ResponseStatus \"{ex4.RestResponse.ResponseStatus}\" and StatusCode \"{ex4.RestResponse.StatusCode}\". {ex4.RestResponse.ErrorMessage}";
+				}
+			}
+			else
+			{
+				ChallongeErrorMessage = ex.NewLineDelimitedMessages();
+			}
+			IsBusy = false;
+		};
+		Action<Exception> onError2 = delegate(Exception ex)
+		{
+			if (ex.InnerException is ChallongeApiException)
+			{
+				ChallongeApiException ex3 = (ChallongeApiException)ex.InnerException;
+				if (ex3.Errors != null)
+				{
+					ChallongeErrorMessage = ex3.Errors.Aggregate((string one, string two) => one + "\r\n" + two);
+				}
+				else
+				{
+					SmashggErrorMessage = $"Error with ResponseStatus \"{ex3.RestResponse.ResponseStatus}\" and StatusCode \"{ex3.RestResponse.StatusCode}\". {ex3.RestResponse.ErrorMessage}";
+				}
+			}
+			else
+			{
+				SmashggErrorMessage = ex.NewLineDelimitedMessages();
+			}
+			IsBusy = false;
+		};
+		SynchronizationContext dispatcher = SynchronizationContext.Current;
+		ChallongeNextCommand = Command.CreateAsync(() => true, delegate
+		{
+			switch (CurrentScreen)
+			{
+			case ScreenType.ApiKey:
+			{
+				string subdomain = (string.IsNullOrWhiteSpace(ChallongeSubdomain) ? null : ChallongeSubdomain);
+				MyChallongePortal = new ChallongePortal(ChallongeApiKey, subdomain);
+				ChallongeTournamentCollection = (from t in MyChallongePortal.GetTournaments()
+					orderby t.CreatedAt descending
+					select t).ToArray();
+				try
+				{
+					ChallongePortal challongePortal = new ChallongePortal(ChallongeApiKey, "fizzitestorg");
+					MostRecentVersion = (from t in challongePortal.GetTournaments()
+						where t.Name == "CMDVersionTest"
+						select string.Concat(t.Description.Where((char c) => char.IsDigit(c) || c == '.'))).First();
+					int num = Version.Split('.').Zip(MostRecentVersion.Split('.'), (string v, string mrv) => int.Parse(v).CompareTo(int.Parse(mrv))).FirstOrDefault((int i) => i != 0);
+					IsVersionOutdatedVisible = num < 0;
+				}
+				catch (Exception)
+				{
+				}
+				CurrentScreen = ScreenType.ChallongeTournamentSelection;
+				break;
+			}
+			case ScreenType.ChallongeTournamentSelection:
+				if (Context != null)
+				{
+					Context.Dispose();
+				}
+				if (matchesChangedHandler != null)
+				{
+					Context.Tournament.PropertyChanged -= matchesChangedHandler;
+				}
+				Context = new ChallongeTournamentContext(MyChallongePortal, ChallongeSelectedTournament.Id);
+				Context.StartSynchronization(TimeSpan.FromMilliseconds(500.0), 6);
+				OrgViewModel = new ChallongeOrganizerViewModel(this, dispatcher);
+				ChallongeDisplayMatches = ((ChallongeObservableTournament)Context.Tournament).Matches.Select((KeyValuePair<int, IObservableMatch> kvp) => new ChallongeDisplayMatch((ChallongeOrganizerViewModel)OrgViewModel, (ChallongeObservableMatch)kvp.Value, ChallongeDisplayMatch.DisplayType.Assigned)).Concat(((ChallongeObservableTournament)Context.Tournament).Matches.Select((KeyValuePair<int, IObservableMatch> kvp) => new ChallongeDisplayMatch((ChallongeOrganizerViewModel)OrgViewModel, (ChallongeObservableMatch)kvp.Value, ChallongeDisplayMatch.DisplayType.Unassigned))).ToList();
+				matchesChangedHandler = delegate(object sender, PropertyChangedEventArgs e)
+				{
+					if (e.PropertyName == "Matches")
+					{
+						if (((ChallongeObservableTournament)Context.Tournament).Matches == null)
+						{
+							ChallongeDisplayMatches = null;
+						}
+						else
+						{
+							ChallongeDisplayMatches = ((ChallongeObservableTournament)Context.Tournament).Matches.Select((KeyValuePair<int, IObservableMatch> kvp) => new ChallongeDisplayMatch((ChallongeOrganizerViewModel)OrgViewModel, (ChallongeObservableMatch)kvp.Value, ChallongeDisplayMatch.DisplayType.Assigned)).Concat(((ChallongeObservableTournament)Context.Tournament).Matches.Select((KeyValuePair<int, IObservableMatch> kvp) => new ChallongeDisplayMatch((ChallongeOrganizerViewModel)OrgViewModel, (ChallongeObservableMatch)kvp.Value, ChallongeDisplayMatch.DisplayType.Unassigned))).ToList();
+						}
+					}
+				};
+				Context.Tournament.PropertyChanged += matchesChangedHandler;
+				CurrentScreen = ScreenType.ChallongePendingMatchView;
+				break;
+			}
+		}, onStart, onCompletion, onError);
+		SmashggNextCommand = Command.CreateAsync(() => true, delegate
+		{
+			switch (CurrentScreen)
+			{
+			case ScreenType.ApiKey:
+				MySmashggPortal = new SmashggPortal(SmashggApiToken, SmashggSlug);
+				SmashggTournamentCollection = (from t in MySmashggPortal.GetTournaments()
+					orderby t.CreatedAt descending
+					select t).ToArray();
+				CurrentScreen = ScreenType.SmashggEventPhaseGroupSelection;
+				break;
+			case ScreenType.SmashggEventPhaseGroupSelection:
+				if (Context != null)
+				{
+					Context.Dispose();
+				}
+				if (matchesChangedHandler != null)
+				{
+					Context.Tournament.PropertyChanged -= matchesChangedHandler;
+				}
+				Context = new SmashggEventPhaseGroupContext(MySmashggPortal, SmashggSelectedEventPhaseGroupData.Item1, SmashggSelectedEventPhaseGroupData.Item2, SmashggSelectedEventPhaseGroupData.Item3);
+				Context.StartSynchronization(TimeSpan.FromMilliseconds(1000.0), 5);
+				OrgViewModel = new SmashggOrganizerViewModel(this, dispatcher);
+				SmashggDisplayMatches = ((SmashggObservablePhaseGroup)Context.Tournament).Matches.Select((KeyValuePair<string, IObservableMatch> kvp) => new SmashggDisplayMatch((SmashggOrganizerViewModel)OrgViewModel, (SmashggObservableMatch)kvp.Value, SmashggDisplayMatch.DisplayType.Assigned)).Concat(((SmashggObservablePhaseGroup)Context.Tournament).Matches.Select((KeyValuePair<string, IObservableMatch> kvp) => new SmashggDisplayMatch((SmashggOrganizerViewModel)OrgViewModel, (SmashggObservableMatch)kvp.Value, SmashggDisplayMatch.DisplayType.Unassigned))).ToList();
+				CurrentScreen = ScreenType.SmashggPendingMatchView;
+				break;
+			}
+		}, onStart, onCompletion, onError2);
+		ChallongeBack = Command.CreateAsync(() => true, delegate
+		{
+			switch (CurrentScreen)
+			{
+			case ScreenType.ChallongeTournamentSelection:
+				ChallongeApiKey = Settings.Default.challonge_apikey;
+				CurrentScreen = ScreenType.ApiKey;
+				break;
+			case ScreenType.ChallongePendingMatchView:
+				if (OrgViewModel != null)
+				{
+					OrgViewModel.Dispose();
+					OrgViewModel = null;
+				}
+				CurrentScreen = ScreenType.ChallongeTournamentSelection;
+				break;
+			}
+		}, onStart, onCompletion, onError);
+		SmashggBack = Command.CreateAsync(() => true, delegate
+		{
+			switch (CurrentScreen)
+			{
+			case ScreenType.SmashggEventPhaseGroupSelection:
+				SmashggApiToken = Settings.Default.smashgg_apitoken;
+				CurrentScreen = ScreenType.ApiKey;
+				break;
+			case ScreenType.SmashggPendingMatchView:
+				if (OrgViewModel != null)
+				{
+					OrgViewModel.Dispose();
+					OrgViewModel = null;
+				}
+				CurrentScreen = ScreenType.SmashggEventPhaseGroupSelection;
+				break;
+			}
+		}, onStart, onCompletion, onError2);
+		IgnoreVersionNotification = Command.Create(() => true, delegate
+		{
+			IsVersionOutdatedVisible = false;
+		});
+		if (ChallongeApiKey != "")
+		{
+			ChallongeNextCommand.Execute(null);
+		}
+	}
 }

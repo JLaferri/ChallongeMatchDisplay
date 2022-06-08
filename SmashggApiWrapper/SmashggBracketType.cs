@@ -1,0 +1,14 @@
+namespace Fizzi.Libraries.SmashggApiWrapper;
+
+public enum SmashggBracketType
+{
+	SINGLE_ELIMINATION,
+	DOUBLE_ELIMINATION,
+	ROUND_ROBIN,
+	SWISS,
+	EXHIBITION,
+	CUSTOM_SCHEDULE,
+	MATCHMAKING,
+	ELIMINATION_ROUNDS,
+	RACE
+}

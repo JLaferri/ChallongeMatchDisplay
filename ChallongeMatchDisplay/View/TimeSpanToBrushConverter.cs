@@ -1,28 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
+using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace Fizzi.Applications.ChallongeVisualization.View
+namespace Fizzi.Applications.ChallongeVisualization.View;
+
+internal class TimeSpanToBrushConverter : IValueConverter
 {
-    class TimeSpanToBrushConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            var timeSpan = value as TimeSpan?;
-            if (!timeSpan.HasValue) return new SolidColorBrush(Colors.Gray);
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		TimeSpan? timeSpan = value as TimeSpan?;
+		if (!timeSpan.HasValue)
+		{
+			return new SolidColorBrush(Colors.Gray);
+		}
+		if (timeSpan.Value.TotalMinutes > 30.0)
+		{
+			return new SolidColorBrush(Color.FromRgb(byte.MaxValue, 136, 0));
+		}
+		return new SolidColorBrush(Color.FromRgb(80, 192, 80));
+	}
 
-            var time = timeSpan.Value;
-
-            if (time.TotalMinutes > 30) return new SolidColorBrush(Color.FromRgb(0xFF, 0x88, 0x00));
-            else return new SolidColorBrush(Color.FromRgb(0x50, 0xC0, 0x50));
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
 }

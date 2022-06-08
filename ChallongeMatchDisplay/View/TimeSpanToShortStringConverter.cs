@@ -1,34 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
+using System.Globalization;
 using System.Windows.Data;
 
-namespace Fizzi.Applications.ChallongeVisualization.View
+namespace Fizzi.Applications.ChallongeVisualization.View;
+
+internal class TimeSpanToShortStringConverter : IValueConverter
 {
-    class TimeSpanToShortStringConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            var timeSpan = value as TimeSpan?;
-            if (!timeSpan.HasValue) return null;
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		TimeSpan? timeSpan = value as TimeSpan?;
+		if (!timeSpan.HasValue)
+		{
+			return null;
+		}
+		TimeSpan value2 = timeSpan.Value;
+		if (value2 < TimeSpan.Zero)
+		{
+			return "0:00";
+		}
+		int minutes = value2.Minutes;
+		int seconds = value2.Seconds;
+		string timeSeparator = DateTimeFormatInfo.CurrentInfo.TimeSeparator;
+		return string.Format("{1}{2}{0:00}", seconds, minutes, timeSeparator);
+	}
 
-            var time = timeSpan.Value;
-
-            //This condition is to avoid showing negative times that might show up due to clock desynchronizations
-            if (time < TimeSpan.Zero) return "0:00"; 
-
-            int hours = (int)Math.Floor(time.TotalHours);
-            int minutes = time.Minutes;
-
-            var ccTimeSeparator = System.Globalization.DateTimeFormatInfo.CurrentInfo.TimeSeparator;
-
-            return string.Format("{1}{2}{0:00}", minutes, hours, ccTimeSeparator);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		throw new NotImplementedException();
+	}
 }

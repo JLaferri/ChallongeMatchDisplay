@@ -1,60 +1,99 @@
-﻿<UserControl x:Class="Fizzi.Applications.ChallongeVisualization.View.ApiKeyView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-			 xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Fizzi.Applications.ChallongeVisualization.View.ApiKeyView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:lview="clr-namespace:Fizzi.Applications.ChallongeVisualization.View">
+  <Grid VerticalAlignment="Center">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid Row="0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid Row="0">
+        <Label FontSize="20">Challonge</Label>
+      </Grid>
+      <Grid Row="1" Margin="12,0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-    
-        <Grid Grid.Row="1" VerticalAlignment="Center" Margin="12,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            
-            <TextBlock Grid.Column="0" Grid.Row="0" Text="API Key" Margin="6" FontSize="18" />
-            <PasswordBox Grid.Column="1" Grid.Row="0" Margin="6" FontSize="18" lview:PasswordBoxAssistant.BindPassword="true"  lview:PasswordBoxAssistant.BoundPassword="{Binding Path=ApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                <PasswordBox.ToolTip>
-                    The API key of a challonge account. Your API key can be found on the challonge site.
-                </PasswordBox.ToolTip>
-            </PasswordBox>
-
-            <TextBlock Grid.Column="0" Grid.Row="1" Text="Subdomain" Margin="6" FontSize="18" />
-            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Subdomain, UpdateSourceTrigger=PropertyChanged}" Margin="6" FontSize="18">
-                <TextBox.ToolTip>
-                    Subdomain in which to search for tournaments. Leave blank for no subdomain.
-                </TextBox.ToolTip>
-            </TextBox>
-        </Grid>
-
-        <TextBlock Grid.Row="2" Margin="12,6" FontSize="18" TextWrapping="Wrap" Foreground="Red" Text="{Binding ErrorMessage}" />
-
-        <Button Grid.Row="3" Margin="12" Width="140" HorizontalAlignment="Right" FontSize="18" Content="Next"
-                                                Command="{Binding NextCommand}">
-            <Button.Style>
-                <Style TargetType="Button">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding ApiKey}" Value="{x:Null}">
-                            <Setter Property="IsEnabled" Value="False" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding ApiKey}" Value="">
-                            <Setter Property="IsEnabled" Value="False" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Grid.Row="0" Text="API Key" Margin="6" FontSize="18" />
+        <PasswordBox Grid.Column="1" Grid.Row="0" Margin="6" FontSize="18" lview:PasswordBoxAssistant.BindPassword="True" ToolTip="The API key of a challonge account. Your API key can be found on the challonge site." lview:PasswordBoxAssistant.BoundPassword="{Binding Path=ChallongeApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBlock Grid.Column="0" Grid.Row="1" Text="Subdomain" Margin="6" FontSize="18" />
+        <TextBox Grid.Column="1" Grid.Row="1" Margin="6" FontSize="18" ToolTip="Subdomain in which to search for tournaments. Leave blank for no subdomain." Text="{Binding ChallongeSubdomain, UpdateSourceTrigger=PropertyChanged}" />
+      </Grid>
+      <TextBlock Grid.Row="2" Margin="12,6" FontSize="18" TextWrapping="Wrap" Foreground="#FFFF0000" Text="{Binding ChallongeErrorMessage}" />
+      <Button Grid.Row="3" Margin="12" Width="140" HorizontalAlignment="Right" FontSize="18" Content="Next" IsEnabled="True" Command="{Binding ChallongeNextCommand}">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Button}">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding ChallongeApiKey}" Value="{x:Null}">
+                <Setter Property="IsEnabled" Value="False" />
+              </DataTrigger>
+              <DataTrigger Value="" Binding="{Binding ChallongeApiKey}">
+                <Setter Property="IsEnabled" Value="False" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Button>
     </Grid>
+    <Grid Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="257*" />
+        <ColumnDefinition Width="44*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid Row="0" ColumnSpan="2">
+        <Label FontSize="20">SmashGG</Label>
+      </Grid>
+      <Grid Row="1" Margin="12,0" ColumnSpan="2">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Grid.Row="0" Text="API Token" Margin="6" FontSize="18" />
+        <PasswordBox Grid.Column="1" Grid.Row="0" Margin="6" FontSize="18" lview:PasswordBoxAssistant.BindPassword="True" ToolTip="The API token of a smashgg account. An API token can be requested on the smashgg website." lview:PasswordBoxAssistant.BoundPassword="{Binding Path=SmashggApiToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBlock Grid.Column="0" Grid.Row="1" Text="Slug" Margin="6" FontSize="18" />
+        <TextBox Grid.Column="1" Grid.Row="1" Margin="6" FontSize="18" ToolTip="Slug of user to search for tournaments." Text="{Binding SmashggSlug, UpdateSourceTrigger=PropertyChanged}" />
+      </Grid>
+      <TextBlock Grid.Row="2" Margin="12,6" FontSize="18" TextWrapping="Wrap" Foreground="#FFFF0000" Grid.ColumnSpan="2" Text="{Binding SmashggErrorMessage}" />
+      <Button Grid.Row="3" Margin="0,12,12,12" Width="140" HorizontalAlignment="Right" FontSize="18" Content="Next" Grid.ColumnSpan="2" IsEnabled="True" Command="{Binding SmashggNextCommand}">
+        <FrameworkElement.Style>
+          <Style TargetType="{x:Type Button}">
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding SmashggApiToken}" Value="{x:Null}">
+                <Setter Property="IsEnabled" Value="False" />
+              </DataTrigger>
+              <DataTrigger Value="" Binding="{Binding SmashggApiToken}">
+                <Setter Property="IsEnabled" Value="False" />
+              </DataTrigger>
+              <DataTrigger Binding="{Binding SmashggSlug}" Value="{x:Null}">
+                <Setter Property="IsEnabled" Value="False" />
+              </DataTrigger>
+              <DataTrigger Value="" Binding="{Binding SmashggSlug}">
+                <Setter Property="IsEnabled" Value="False" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </FrameworkElement.Style>
+      </Button>
+    </Grid>
+  </Grid>
 </UserControl>

@@ -1,0 +1,18 @@
+﻿<Window x:Class="Fizzi.Applications.ChallongeVisualization.View.ChallongeNewStation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
+        mc:Ignorable="d"
+        Title="Create New Station" Height="177.068" Width="267.293" WindowStartupLocation="CenterScreen">
+    <Grid Margin="0,0,2,0">
+        <Button x:Name="createButton" Content="Create Station" HorizontalAlignment="Left" Margin="129,106,0,0" VerticalAlignment="Top" Width="101" Click="createButton_Click"/>
+        <Button x:Name="cancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="21,106,0,0" VerticalAlignment="Top" Width="67" Click="cancelButton_Click"/>
+        <Label x:Name="label" Content="Station Name:" HorizontalAlignment="Left" Margin="15,19,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <TextBox x:Name="stationName" HorizontalAlignment="Left" Height="23" Margin="110,23,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="label_Copy" Content="Station Type:" HorizontalAlignment="Left" Margin="21,50,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <ComboBox x:Name="stationType" HorizontalAlignment="Left" Margin="110,54,0,0" VerticalAlignment="Top" Width="120" />
+
+    </Grid>
+</Window>

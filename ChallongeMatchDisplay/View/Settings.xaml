@@ -1,38 +1,37 @@
-﻿<Window x:Class="Fizzi.Applications.ChallongeVisualization.View.Settings"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
-        mc:Ignorable="d"
-        Title="Settings" Height="407.142" Width="632.706" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" WindowStartupLocation="CenterScreen" Icon="/Challonge Match Display;component/Graphicloads-Food-Drink-Icecream-2.ico">
-    <Grid>
-        <Label x:Name="apiKeyLabel" Content="Challonge API Key:" HorizontalAlignment="Left" Margin="95,52,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <PasswordBox x:Name="apiKeyTextBox" HorizontalAlignment="Left" Height="23" Margin="212,56,0,0" VerticalAlignment="Top" Width="395"/>
-        <Label x:Name="subdomainLabel" Content="Challonge Subdomain:" HorizontalAlignment="Left" Margin="75,79,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <TextBox x:Name="subdomainTextBox" HorizontalAlignment="Left" Height="23" Margin="212,83,0,0" TextWrapping="Wrap" Text="Subdomain" VerticalAlignment="Top" Width="395"/>
-        <Button x:Name="button" Content="Save Changes" HorizontalAlignment="Left" Margin="506,332,0,0" VerticalAlignment="Top" Width="101" Click="Save_Click"/>
-        <Button x:Name="button1" Content="Cancel" HorizontalAlignment="Left" Margin="414,332,0,0" VerticalAlignment="Top" Width="75" Click="Cancel_Click"/>
-        <Label x:Name="label_Copy1" Content="Save Challonge Credentials?" HorizontalAlignment="Left" Margin="44,26,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <CheckBox x:Name="saveChallonge" Content="Yes. Challonge API Key and Subdomain will be saved locally" HorizontalAlignment="Left" Margin="212,32,0,0" VerticalAlignment="Top" Click="SaveChallonge_Click"/>
-        <Label x:Name="overlayPathLabel" Content="Overlay Output File(s) Path:" HorizontalAlignment="Left" Margin="46,180,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <TextBox x:Name="overlayPath" HorizontalAlignment="Left" Height="23" Margin="212,184,0,0" TextWrapping="Wrap" Text="overlays" VerticalAlignment="Top" Width="304"/>
-        <Button x:Name="browse" Content="Browse" HorizontalAlignment="Left" Margin="521,184,0,0" VerticalAlignment="Top" Width="86" Height="22" Click="browse_Click"/>
-        <Label x:Name="label_Copy" Content="Enable Scoreboard?" HorizontalAlignment="Left" Margin="92,127,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <CheckBox x:Name="enableScoreboard" Content="Yes. enable scoreboard features and stream overlay txt files" HorizontalAlignment="Left" Margin="212,133,0,0" VerticalAlignment="Top" Click="enableScoreboard_Click"/>
-        <Label x:Name="label_Copy2" Content="Show Instructions?" HorizontalAlignment="Left" Margin="96,261,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <CheckBox x:Name="showInstructions" Content="Yes. keep instructions visible below the matches grid" HorizontalAlignment="Left" Margin="212,267,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="roundLabel" Content="Display Rounds As:" HorizontalAlignment="Left" Margin="95,208,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <ComboBox x:Name="roundDisplay" HorizontalAlignment="Left" Margin="212,212,0,0" VerticalAlignment="Top" Width="304">
-            <ComboBoxItem Content="Condensed (ex. W Quarter Finals)"/>
-            <ComboBoxItem Content="Full (ex. Winners Quarter Finals)"/>
-            <ComboBoxItem Content="Abbreviated (ex. WQF)"/>
-        </ComboBox>
-        <Label x:Name="outputLabel" Content="Output Format:" HorizontalAlignment="Left" Margin="115,153,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <ComboBox x:Name="outputFormat" HorizontalAlignment="Left" Margin="212,157,0,0" VerticalAlignment="Top" Width="304">
-            <ComboBoxItem Content="Multiple Text Files (TXT)"/>
-            <ComboBoxItem Content="One XML File"/>
-        </ComboBox>
-
-    </Grid>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="Fizzi.Applications.ChallongeVisualization.View.Settings" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:Fizzi.Applications.ChallongeVisualization.View" Title="Settings" Height="440" Width="632.706" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" WindowStartupLocation="CenterScreen" Icon="/Challonge Match Display;component/Graphicloads-Food-Drink-Icecream-2.ico">
+  <Grid>
+    <Label Name="challongeApiKeyLabel" Content="Challonge API Key:" HorizontalAlignment="Left" Margin="95,52,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <PasswordBox Name="challongeApiKeyTextBox" HorizontalAlignment="Left" Height="23" Margin="212,56,0,0" VerticalAlignment="Top" Width="395" />
+    <Label Name="challongeSubdomainLabel" Content="Challonge Subdomain:" HorizontalAlignment="Left" Margin="75,79,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <TextBox Name="challongeSubdomainTextBox" HorizontalAlignment="Left" Height="23" Margin="212,83,0,0" TextWrapping="Wrap" Text="Subdomain" VerticalAlignment="Top" Width="395" />
+    <Label Name="smashggApiTokenLabel" Content="Smashgg API Token:" HorizontalAlignment="Left" Margin="88,148,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <PasswordBox Name="smashggApiTokenTextBox" HorizontalAlignment="Left" Height="23" Margin="212,150,0,0" VerticalAlignment="Top" Width="395" />
+    <Label Name="smashggSlugLabel" Content="Smashgg User Slug:" HorizontalAlignment="Left" Margin="91,174,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <TextBox Name="smashggSlugTextBox" HorizontalAlignment="Left" Height="23" Margin="212,177,0,0" TextWrapping="Wrap" Text="Slug" VerticalAlignment="Top" Width="395" />
+    <Button Name="button" Content="Save Changes" HorizontalAlignment="Left" Margin="506,381,0,0" VerticalAlignment="Top" Width="101" Click="Save_Click" />
+    <Button Name="button1" Content="Cancel" HorizontalAlignment="Left" Margin="413,381,0,0" VerticalAlignment="Top" Width="75" Click="Cancel_Click" />
+    <Label Name="saveChallongeLabel" Content="Save Challonge Credentials?" HorizontalAlignment="Left" Margin="44,26,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <CheckBox Name="saveChallonge" Content="Yes. Challonge API Key and Subdomain will be saved locally" HorizontalAlignment="Left" Margin="212,32,0,0" VerticalAlignment="Top" Click="SaveChallonge_Click" />
+    <Label Name="saveSmashggLabel" Content="Save Smashgg Credentials?" HorizontalAlignment="Left" Margin="44,120,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <CheckBox Name="saveSmashgg" Content="Yes. Smashgg API Token and user slug will be saved locally" HorizontalAlignment="Left" Margin="212,126,0,0" VerticalAlignment="Top" Click="SaveSmashgg_Click" />
+    <Label Name="overlayPathLabel" Content="Overlay Output File(s) Path:" HorizontalAlignment="Left" Margin="46,261,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <TextBox Name="overlayPath" HorizontalAlignment="Left" Height="23" Margin="212,264,0,0" TextWrapping="Wrap" Text="overlays" VerticalAlignment="Top" Width="304" />
+    <Button Name="browse" Content="Browse" HorizontalAlignment="Left" Margin="521,264,0,0" VerticalAlignment="Top" Width="86" Height="22" Click="browse_Click" />
+    <Label Name="label_Copy" Content="Enable Scoreboard?" HorizontalAlignment="Left" Margin="92,207,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <CheckBox Name="enableScoreboard" Content="Yes. enable scoreboard features and stream overlay txt files" HorizontalAlignment="Left" Margin="212,213,0,0" VerticalAlignment="Top" Click="enableScoreboard_Click" />
+    <Label Name="label_Copy2" Content="Show Instructions?" HorizontalAlignment="Left" Margin="96,329,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <CheckBox Name="showInstructions" Content="Yes. keep instructions visible below the matches grid" HorizontalAlignment="Left" Margin="212,335,0,0" VerticalAlignment="Top" />
+    <Label Name="roundLabel" Content="Display Rounds As:" HorizontalAlignment="Left" Margin="95,304,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <ComboBox Name="roundDisplay" HorizontalAlignment="Left" Margin="212,308,0,0" VerticalAlignment="Top" Width="304">
+      <ComboBoxItem Content="Condensed (ex. W Quarter Finals)" />
+      <ComboBoxItem Content="Full (ex. Winners Quarter Finals)" />
+      <ComboBoxItem Content="Abbreviated (ex. WQF)" />
+    </ComboBox>
+    <Label Name="outputLabel" Content="Output Format:" HorizontalAlignment="Left" Margin="115,233,0,0" VerticalAlignment="Top" FontWeight="Bold" />
+    <ComboBox Name="outputFormat" HorizontalAlignment="Left" Margin="212,237,0,0" VerticalAlignment="Top" Width="304">
+      <ComboBoxItem Content="Multiple Text Files (TXT)" />
+      <ComboBoxItem Content="One XML File" />
+    </ComboBox>
+  </Grid>
 </Window>

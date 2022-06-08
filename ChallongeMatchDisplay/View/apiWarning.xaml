@@ -1,16 +1,10 @@
-﻿<Window x:Class="Fizzi.Applications.ChallongeVisualization.View.ApiWarning"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Fizzi.Applications.ChallongeVisualization.View"
-        mc:Ignorable="d"
-        Title="WARNING!!!" Height="334.962" Width="539.097" WindowStartupLocation="CenterScreen" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" Icon="/Challonge Match Display;component/Graphicloads-Food-Drink-Icecream-2.ico">
-    <Grid>
-        <Button x:Name="okButton" Content="Understood" HorizontalAlignment="Left" Margin="331,251,0,0" VerticalAlignment="Top" Width="174" IsDefault="True" Click="okClick" FontSize="18.667" />
-        <Button x:Name="cancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="190,251,0,0" VerticalAlignment="Top" Width="114" IsCancel="True" FontSize="18.667" />
-        <Label x:Name="label" Content="i" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" FontFamily="Webdings" FontSize="96" Foreground="#FFE83535"/>
-        <Label x:Name="label1" Content="WARNING!!" HorizontalAlignment="Left" Margin="116,13,0,0" VerticalAlignment="Top" Foreground="#FFE83535" FontSize="64" FontFamily="Segoe UI Black"/>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="28,121,0,0" TextWrapping="Wrap" Text="Anyone with access to this computer will potentially be able to see your Challonge API key and therefore gain full access to your account. Do NOT save your Challonge credentials unless this is a private computer." VerticalAlignment="Top" FontSize="18.667" Width="477"/>
-    </Grid>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Window x:Class="Fizzi.Applications.ChallongeVisualization.View.ApiWarning" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:Fizzi.Applications.ChallongeVisualization.View" Title="WARNING!!!" Height="334.962" Width="539.097" WindowStartupLocation="CenterScreen" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" Icon="/Challonge Match Display;component/Graphicloads-Food-Drink-Icecream-2.ico">
+  <Grid>
+    <Button Name="okButton" Content="Understood" HorizontalAlignment="Left" Margin="331,251,0,0" VerticalAlignment="Top" Width="174" IsDefault="True" FontSize="18.667" Click="okClick" />
+    <Button Name="cancelButton" Content="Cancel" HorizontalAlignment="Left" Margin="190,251,0,0" VerticalAlignment="Top" Width="114" IsCancel="True" FontSize="18.667" />
+    <Label Name="label" Content="i" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" FontFamily="Webdings" FontSize="96" Foreground="#FFE83535" />
+    <Label Name="label1" Content="WARNING!!" HorizontalAlignment="Left" Margin="116,13,0,0" VerticalAlignment="Top" Foreground="#FFE83535" FontSize="64" FontFamily="Segoe UI Black" />
+    <TextBlock Name="textBlock" HorizontalAlignment="Left" Margin="28,121,0,0" TextWrapping="Wrap" Text="Anyone with access to this computer will potentially be able to see your Challonge API key and therefore gain full access to your account. Do NOT save your Challonge credentials unless this is a private computer." VerticalAlignment="Top" FontSize="18.667" Width="477" />
+  </Grid>
 </Window>

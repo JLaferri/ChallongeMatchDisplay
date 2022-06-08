@@ -1,50 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+namespace Fizzi.Applications.ChallongeVisualization.Model;
 
-namespace Fizzi.Applications.ChallongeVisualization.Model
+internal class GlobalSettings
 {
-    class GlobalSettings
-    {
-        #region Singleton Pattern Region
-        private static volatile GlobalSettings instance;
-        private static object syncRoot = new Object();
+	private static volatile GlobalSettings instance;
 
-        private GlobalSettings()
-        {
-            initialize();
-        }
+	private static object syncRoot = new object();
 
-        public static GlobalSettings Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (instance == null) instance = new GlobalSettings();
-                    }
-                }
+	public static GlobalSettings Instance
+	{
+		get
+		{
+			if (instance == null)
+			{
+				lock (syncRoot)
+				{
+					if (instance == null)
+					{
+						instance = new GlobalSettings();
+					}
+				}
+			}
+			return instance;
+		}
+	}
 
-                return instance;
-            }
-        }
-        #endregion
+	public NewMatchAction SelectedNewMatchAction { get; set; }
 
-        public NewMatchAction SelectedNewMatchAction { get; set; }
+	private GlobalSettings()
+	{
+		initialize();
+	}
 
-        private void initialize()
-        {
-            SelectedNewMatchAction = NewMatchAction.None;
-        }
-    }
-
-    enum NewMatchAction
-    {
-        None,
-        AutoAssign,
-        Anywhere
-    }
+	private void initialize()
+	{
+		SelectedNewMatchAction = NewMatchAction.None;
+	}
 }
