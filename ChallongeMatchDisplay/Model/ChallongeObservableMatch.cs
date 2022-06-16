@@ -11,7 +11,7 @@ using Fizzi.Libraries.ChallongeApiWrapper;
 
 namespace Fizzi.Applications.ChallongeVisualization.Model;
 
-internal class ChallongeObservableMatch : INotifyPropertyChanged
+internal class ChallongeObservableMatch : INotifyPropertyChanged, IObservableMatch
 {
 	private static PropertyInfo[] matchProperties = typeof(ChallongeMatch).GetProperties();
 
@@ -73,7 +73,7 @@ internal class ChallongeObservableMatch : INotifyPropertyChanged
 		}
 	}
 
-	public ChallongeObservableParticipant Winner
+	public IObservableParticipant Winner
 	{
 		get
 		{
@@ -85,7 +85,7 @@ internal class ChallongeObservableMatch : INotifyPropertyChanged
 		}
 	}
 
-	public ChallongeObservableParticipant Loser
+	public IObservableParticipant Loser
 	{
 		get
 		{
@@ -385,7 +385,7 @@ internal class ChallongeObservableMatch : INotifyPropertyChanged
 	{
 		source = match;
 		OwningContext = context;
-		int participantsCount = ((ChallongeTournament)context.Tournament).ParticipantsCount;
+		int participantsCount = ((ChallongeObservableTournament)context.Tournament).ParticipantsCount;
 		double y = Math.Floor(Math.Log(participantsCount, 2.0));
 		double num = Math.Pow(2.0, y);
 		if (match.Round < 0 && (double)participantsCount > num && (double)participantsCount <= num + num / 2.0)

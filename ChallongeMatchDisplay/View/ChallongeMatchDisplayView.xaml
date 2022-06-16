@@ -84,7 +84,7 @@
                             </Button.Template>
                         </Button>
 
-                        <Button Grid.Column="2" Margin="3" Cursor="Hand" Command="{Binding Back}" Click="BackButton_Click" FocusVisualStyle="{x:Null}">
+                        <Button Grid.Column="2" Margin="3" Cursor="Hand" Command="{Binding ChallongeBack}" Click="BackButton_Click" FocusVisualStyle="{x:Null}">
                             <Button.Template>
                                 <ControlTemplate>
                                     <Border Background="CornflowerBlue">

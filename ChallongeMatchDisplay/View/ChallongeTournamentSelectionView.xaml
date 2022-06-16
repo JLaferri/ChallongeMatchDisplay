@@ -16,8 +16,8 @@
             Select tournament to monitor. If tournament does not show up, click begin tournament on challonge and refresh.
         </TextBlock>
         
-        <ListView Grid.Row="1" Margin="12" ItemsSource="{Binding TournamentCollection}" 
-                                                  SelectedItem="{Binding SelectedTournament, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="TournamentDoubleClick">
+        <ListView Grid.Row="1" Margin="12" ItemsSource="{Binding ChallongeTournamentCollection}" 
+                                                  SelectedItem="{Binding ChallongeSelectedTournament, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="TournamentDoubleClick">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}" Margin="6" FontSize="18" />
@@ -27,11 +27,11 @@
 
         <DockPanel Grid.Row="2">
             <Button DockPanel.Dock="Right" Grid.Row="2" Margin="12" Width="140" HorizontalAlignment="Right" FontSize="18" Content="Next"
-                    Command="{Binding NextCommand}">
+                    Command="{Binding ChallongeNextCommand}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding SelectedTournament}" Value="{x:Null}">
+                            <DataTrigger Binding="{Binding ChallongeSelectedTournament}" Value="{x:Null}">
                                 <Setter Property="IsEnabled" Value="False" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -40,7 +40,7 @@
             </Button>
 
             <Button DockPanel.Dock="Left" Grid.Row="2" Margin="12" Width="140" HorizontalAlignment="Left" FontSize="18" Content="Back"
-                    Command="{Binding Back}" />
+                    Command="{Binding ChallongeBack}" />
         </DockPanel>
     </Grid>
 </UserControl>

@@ -326,12 +326,14 @@ internal class MainViewModel : INotifyPropertyChanged
 					select t).ToArray();
 				try
 				{
-					ChallongePortal challongePortal = new ChallongePortal(ChallongeApiKey, "fizzitestorg");
-					MostRecentVersion = (from t in challongePortal.GetTournaments()
-						where t.Name == "CMDVersionTest"
-						select string.Concat(t.Description.Where((char c) => char.IsDigit(c) || c == '.'))).First();
-					int num = Version.Split('.').Zip(MostRecentVersion.Split('.'), (string v, string mrv) => int.Parse(v).CompareTo(int.Parse(mrv))).FirstOrDefault((int i) => i != 0);
-					IsVersionOutdatedVisible = num < 0;
+					// TODO create new version test tournament
+
+					//ChallongePortal challongePortal = new ChallongePortal(ChallongeApiKey, "fizzitestorg");
+					//MostRecentVersion = (from t in challongePortal.GetTournaments()
+					//	where t.Name == "CMDVersionTest"
+					//	select string.Concat(t.Description.Where((char c) => char.IsDigit(c) || c == '.'))).First();
+					//int num = Version.Split('.').Zip(MostRecentVersion.Split('.'), (string v, string mrv) => int.Parse(v).CompareTo(int.Parse(mrv))).FirstOrDefault((int i) => i != 0);
+					//IsVersionOutdatedVisible = num < 0;
 				}
 				catch (Exception)
 				{

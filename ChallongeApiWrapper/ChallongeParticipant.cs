@@ -23,5 +23,10 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
         public string Misc { get; set; }
 
         public string NameOrUsername { get { return string.IsNullOrEmpty(Name) ? ChallongeUsername : Name; } }
+
+        [System.Runtime.Serialization.OnDeserialized]
+        void OnDeserialized(System.Runtime.Serialization.StreamingContext c) {
+            Misc = (Misc == null) ? "" : Misc;
+        }
     }
 }

@@ -63,24 +63,43 @@ namespace Fizzi.Libraries.ChallongeApiWrapper
 
         public ChallongeTournament ShowTournament(int tournamentId)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}.xml", tournamentId), Method.Get);
+            // use json to work around challonge api bug
+            var request = new RestRequest(string.Format("tournaments/{0}.json", tournamentId), Method.Get);
             request.AddParameter("api_key", ApiKey);
 
-            var response = client.ExecuteAsync<ChallongeTournament>(request).GetAwaiter().GetResult();
+            var response = client.ExecuteAsync(request).GetAwaiter().GetResult();
             throwOnError(response);
 
-            return response.Data;
+            var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(response.Content));
+            var ser = new DataContractJsonSerializer(typeof(TournamentWrapper));
+            var tournament = ser.ReadObject(ms) as TournamentWrapper;
+            ms.Close();
+
+            return tournament.Tournament;
+        }
+
+        [DataContract(Name ="match")]
+        private class MatchWrapper
+        {
+            [DataMember(Name = "match")]
+            public ChallongeMatch Match;
         }
 
         public IEnumerable<ChallongeMatch> GetMatches(int tournamentId)
         {
-            var request = new RestRequest(string.Format("tournaments/{0}/matches.xml", tournamentId), Method.Get);
+            // use json to work around challonge api bug
+            var request = new RestRequest(string.Format("tournaments/{0}/matches.json", tournamentId), Method.Get);
             request.AddParameter("api_key", ApiKey);
 
-            var response = client.ExecuteAsync<List<ChallongeMatch>>(request).GetAwaiter().GetResult();
+            var response = client.ExecuteAsync(request).GetAwaiter().GetResult();
             throwOnError(response);
             
-            return response.Data;
+            var ms = new System.IO.MemoryStream(Encoding.UTF8.GetBytes(response.Content));
+            var ser = new DataContractJsonSerializer(typeof(List<MatchWrapper>));
+            var matches = ser.ReadObject(ms) as List<MatchWrapper>;
+            ms.Close();
+
+            return matches.Select(x => x.Match);
         }
 
         [DataContract(Name ="participant")]
