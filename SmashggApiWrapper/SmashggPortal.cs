@@ -41,7 +41,7 @@ public sealed class SmashggPortal
 		restRequest.AddParameter("query", "\n                query GetUser($slug: String!) {\n                    user(slug:$slug) {\n                        id\n                    }\n                }\n            ");
 		restRequest.AddParameter("variables", SimpleJson.SerializeObject(new
 		{
-			slug = Slug
+			slug = Slug.Trim()
 		}));
 		dynamic val = SimpleJson.DeserializeObject(client.ExecuteAsync(restRequest).GetAwaiter().GetResult().Content);
 		long ownerId = val["data"]["user"]["id"];
