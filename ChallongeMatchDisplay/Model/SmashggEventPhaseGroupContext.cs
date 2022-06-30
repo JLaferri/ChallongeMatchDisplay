@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using Fizzi.Applications.ChallongeVisualization.Common;
 using Fizzi.Libraries.SmashggApiWrapper;
+using log4net;
 
 namespace Fizzi.Applications.ChallongeVisualization.Model;
 
 internal class SmashggEventPhaseGroupContext : ITournamentContext, IDisposable, INotifyPropertyChanged
 {
+    ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 	private readonly long phaseGroupId;
 
 	private readonly long phaseId;
@@ -101,6 +105,7 @@ internal class SmashggEventPhaseGroupContext : ITournamentContext, IDisposable, 
 			else
 			{
 				ErrorMessage = $"Error with ResponseStatus \"{ex.RestResponse.ResponseStatus}\" and StatusCode \"{ex.RestResponse.StatusCode}\". {ex.RestResponse.ErrorMessage}";
+				Log.Error("SmashggApiException", ex);
 			}
 			return null;
 		}
@@ -127,7 +132,11 @@ internal class SmashggEventPhaseGroupContext : ITournamentContext, IDisposable, 
 		{
 			if (num % pollEvery == 0L)
 			{
-				Refresh();
+				try {
+					Refresh();
+				} catch (Exception ex) {
+					Log.Error("Refresh Failed", ex);
+                }
 			}
 		});
 		ScanInterval = timeInterval;

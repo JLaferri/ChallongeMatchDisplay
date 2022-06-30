@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Input;
+using log4net;
 
 namespace Fizzi.Applications.ChallongeVisualization.Common
 {
     public class Command : ICommand
     {
+        ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public static Command<TIn> Create<TIn>(Func<TIn, bool> canExecute, Action<TIn> execute)
         {
             return new Command<TIn>(canExecute, execute);
@@ -64,7 +68,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Common
 
         public void Execute(object parameter)
         {
-            _execute();
+            try {
+                _execute();
+            } catch (Exception ex) {
+                Log.Error("Command Execute Error", ex);
+            }
         }
 
         public event EventHandler CanExecuteChanged { add { } remove { } }
@@ -72,6 +80,8 @@ namespace Fizzi.Applications.ChallongeVisualization.Common
 
     public class Command<TIn> : ICommand
     {
+        ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private readonly Func<TIn, bool> _canExecute;
         private readonly Action<TIn> _execute;
 
@@ -92,7 +102,11 @@ namespace Fizzi.Applications.ChallongeVisualization.Common
 
         public void Execute(object parameter)
         {
-            _execute((TIn)parameter);
+            try {
+                _execute((TIn)parameter);
+            } catch (Exception ex) {
+                Log.Error("Command Execute Error", ex);
+            }
         }
 
         public event EventHandler CanExecuteChanged { add { } remove { } }
