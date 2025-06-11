@@ -2,6 +2,6 @@
 
 Windows application that displays pending matches of a challonge bracket. Useful when hosting a tournament to keep the players better informed with what matches are active and who is still in the tournament.
 
-### Web-Based Alternative
+## Requirements
+[Net Hosting Bundle (runtime and ASP.NET runtime)](https://dotnet.microsoft.com/en-us/download/dotnet/9.0/runtime)
 
-One of our contributors, @gazugafan, has developed [RoundOne](https://round.one): a drop-in replacement for challonge that includes many of the features found here. It's not open-source, but it is free to use.
